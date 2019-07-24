@@ -1,0 +1,25 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 24.07.2019
+  Changes:
+    - Code cleanup
+    - UPS friendlier
+    - Better GUI
+    - Better remote
+  New:
+    - Acceleration support
+    - Top Speed support
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 22.06.2019
+  Changes:
+    - A little Code cleanup
+    - New Color Masks
+---------------------------------------------------------------------------------------------------
+Version 0.1.0
+Date: 20.05.2019
+	Features:
+	 - A Electronic Base Tier Locomotive
+	 - A Electronic Cargo Tier Locomotive
+	 - A Electric Provider
+	 - Tier 8 & 9 Braking Force
