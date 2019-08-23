@@ -3,10 +3,16 @@ require "config"
 local m = "__Electronic_Locomotives__"
 local utd = util.table.deepcopy
 
-Senpais.Functions.Create.Electronic_Locomotive = function( mp, n, i, h, w, s, c, g, su, o, st, ig, t )
+Senpais.Functions.Create.Electronic_Locomotive = function( mp, n, h, w, s, c, g, su, o, st, ig, t )
+	local i =
+	{
+		{ icon = m .. "/graphics/diesel-locomotive-base.png", icon_size = 32 },
+		{ icon = m .. "/graphics/diesel-locomotive-mask.png", icon_size = 32, tint = util.color( c ) }
+	}
 	local te = utd( data.raw["locomotive"]["locomotive"] )
 	te.name = n
-	te.icon = i
+	te.icon = nil
+	te.icons = i
 	te.minable.result = n
 	te.max_health = h
 	te.weight = w
@@ -31,14 +37,16 @@ Senpais.Functions.Create.Electronic_Locomotive = function( mp, n, i, h, w, s, c,
 		end
 	end
 
-	te.color = c
+	te.color = util.color( c )
+	
 	if g ~= nil then
 		te.equipment_grid = g
 	end
 
 	local ti = utd( data.raw["item-with-entity-data"]["locomotive"] )
 	ti.name = n
-	ti.icon = i
+	ti.icon = nil
+	ti.icons = i
 	ti.subgroup = su
 	ti.order = o
 	ti.place_result = n
@@ -217,11 +225,10 @@ Senpais.Functions.Create.Electronic_Locomotive
 (
 	"600kW",
 	"Senpais-Electric-Train",
-	m .. "/graphics/Senpais-Electric-Train.png",
 	1000,
 	2000,
 	1.2,
-	{ r = 83, g = 187, b = 144 },
+	"#53bb90",
 	nil,
 	"transport",
 	"a[train-system]-faa[Senpais-Electric-Train]",
@@ -234,11 +241,10 @@ Senpais.Functions.Create.Electronic_Locomotive
 (
 	"3000kW",
 	"Senpais-Electric-Train-Heavy",
-	m .. "/graphics/Senpais-Electric-Train-Heavy.png",
 	2000,
 	5000,
 	1.2,
-	{ r = 166, g = 26, b = 26 },
+	"#a61a1a",
 	nil,
 	"transport",
 	"a[train-system]-fab[Senpais-Electric-Train-Heavy]",
