@@ -1,106 +1,40 @@
-require "config"
+require "defines"
 
-local m = "__Electronic_Locomotives__"
-local utd = util.table.deepcopy
+local MODNAME = "__Electronic_Locomotives__"
+local table_deepcopy = util.table.deepcopy
+local temp01 = "Electronic-Energy-Provider"
+local temp02 = MODNAME .. "/graphics/" .. temp01 .. "-i.png"
 
-Senpais.Functions.Create.Electronic_Locomotive = function( mp, n, h, w, s, c, g, su, o, st, ig, t )
-	local i =
-	{
-		{ icon = m .. "/graphics/diesel-locomotive-base.png", icon_size = 32 },
-		{ icon = m .. "/graphics/diesel-locomotive-mask.png", icon_size = 32, tint = util.color( c ) }
-	}
-	local te = utd( data.raw["locomotive"]["locomotive"] )
-	te.name = n
-	te.icon = nil
-	te.icons = i
-	te.minable.result = n
-	te.max_health = h
-	te.weight = w
-	te.max_speed = s
-	te.max_power = mp
-	te.burner =
-	{
-		fuel_category = "electronic",
-		effictivity = 1,
-		fuel_inventory_size = 1
-	}
-
-	for _, l in pairs( te.pictures.layers ) do
-		if l.apply_runtime_tint == true then
-			for i = 1, 8 do
-				l.filenames[i] = m .. "/graphics/mask-" .. i .. ".png"
-			end
-			for i = 1, 16 do
-				l.hr_version.filenames[i] = m .. "/graphics/hr-mask-" .. i .. ".png"
-			end
-			break
-		end
-	end
-
-	te.color = util.color( c )
-	
-	if g ~= nil then
-		te.equipment_grid = g
-	end
-
-	local ti = utd( data.raw["item-with-entity-data"]["locomotive"] )
-	ti.name = n
-	ti.icon = nil
-	ti.icons = i
-	ti.subgroup = su
-	ti.order = o
-	ti.place_result = n
-	ti.stack_size = st
-
-	local tr = utd( data.raw["recipe"]["locomotive"] )
-	tr.name = n
-	tr.ingredients = ig
-	tr.result = n
-
-	data:extend{ te, ti, tr }
-
-	table.insert( data.raw["technology"][t].effects, { type = "unlock-recipe", recipe = n } )
-end
-
-Senpais.Functions.Create.Grid = function( n, w, h, c )
-	local g = utd( data.raw["equipment-grid"]["large-equipment-grid"] )
-	g.name = n
-	g.width = w
-	g.height = h
-	g.equipment_categories = c
-
-	data:extend{ g }
-end
-
-local a = "Senpais-Power-Provider"
-
-local ae = utd( data.raw["electric-energy-interface"]["electric-energy-interface"] )
-ae.name = a
-ae.icon = m .. "/graphics/" .. a .. "-i.png"
-ae.minable.result = a
-ae.enable_gui = false
-ae.allow_copy_paste = false
-ae.energy_source =
+local provider01_entity = table_deepcopy( data.raw["electric-energy-interface"]["electric-energy-interface"] )
+provider01_entity.name = temp01
+provider01_entity.icon = temp02
+provider01_entity.icons = nil
+provider01_entity.subgroup = nil
+provider01_entity.minable.result = temp01
+provider01_entity.enable_gui = false
+provider01_entity.gui_mode = "none"
+provider01_entity.allow_copy_paste = false
+provider01_entity.energy_source =
 {
 	type = "electric",
 	buffer_capacity = "200MJ",
 	usage_priority = "primary-input",
-	input_flow_limit = "5000kW",
-	output_flow_limit = "0W"
+	input_flow_limit = "5MW",
+	output_flow_limit = "0kW"
 }
-ae.energy_production = "0kW"
-ae.energy_usage = "0kW"
-ae.picture =
+provider01_entity.energy_production = "0kW"
+provider01_entity.energy_usage = "0kW"
+provider01_entity.picture =
 {
-	filename = m .. "/graphics/" .. a.. "-e.png",
+	filename = MODNAME .. "/graphics/" .. temp01 .. "-e.png",
 	priority = "extra-high",
 	width = 124,
 	height = 103,
 	shift = { 0.6875, -0.203125 }
 }
-ae.charge_animation =
+provider01_entity.charge_animation =
 {
-	filename = m .. "/graphics/" .. a .. "-charge.png",
+	filename = MODNAME .. "/graphics/" .. temp01 .. "-charge.png",
 	width = 138,
 	height = 135,
 	line_length = 8,
@@ -108,26 +42,119 @@ ae.charge_animation =
 	shift = { 0.46875, -0.640625 },
 	animation_speed = 0.5
 }
-ae.gui_mode = "none"
+provider01_entity.discharge_animation =
+{
+	filename = MODNAME .. "/graphics/" .. temp01 .. "discharge.png",
+	width = 147,
+	height = 128,
+	line_length = 8,
+	frame_count = 24,
+	shift = { 0.390625, -0.53125 },
+	animation_speed = 0.5
+}
+provider01_entity.fast_replaceable_group = "electronic-provider"
+provider01_entity.next_upgrade = "Electronic-Energy-Provider-2"
 
-local ai = utd( data.raw["item"]["accumulator"] )
-ai.name = a
-ai.icon = m .. "/graphics/" .. a .. "-i.png"
-ai.order = "e[accumulator]-d[" .. a .. "]"
-ai.place_result = a
+local provider01_item = table_deepcopy( data.raw["item"]["accumulator"] )
+provider01_item.name = temp01
+provider01_item.icon = temp02
+provider01_item.order = "e[accumulator]-aa[" .. temp01 .. "]"
+provider01_item.place_result = temp01
 
-local ar = utd( data.raw["recipe"]["accumulator"] )
-ar.name = "Senpais-Power-Provider"
-ar.ingredients = { { "accumulator", 5 }, { "battery", 10 }, { "electronic-circuit", 20 } }
-ar.result = "Senpais-Power-Provider"
+local provider01_recipe = table_deepcopy( data.raw["recipe"]["accumulator"] )
+provider01_recipe.name = temp01
+provider01_recipe.ingredients =
+{
+	{ "accumulator", 5 },
+	{ "battery", 10 },
+	{ "electronic-circuit", 20 }
+}
+provider01_recipe.result = temp01
 
-local tech = utd( data.raw["technology"]["railway"] )
-tech.name = "Senpais-Electric-Train"
-tech.icon = m .. "/graphics/tech.png"
-tech.icon_size = 128
-tech.effects = { { type = "unlock-recipe", recipe = a } }
-tech.prerequisites = { "railway", "electric-engine", "battery", "electric-energy-distribution-2" }
-tech.unit = 
+temp01 = "Electronic-Energy-Provider-2"
+temp02 = MODNAME .. "/graphics/" .. temp01 .. "-i.png"
+
+local provider02_entity = table_deepcopy( provider01_entity )
+provider02_entity.name = temp01
+provider02_entity.icon = temp02
+provider02_entity.minable.result = temp01
+provider02_entity.energy_source =
+{
+	type = "electric",
+	buffer_capacity = "10GJ",
+	usage_priority = "primary-input",
+	input_flow_limit = "500MW",
+	output_flow_limit = "0kW"
+}
+
+provider02_entity.picture.filename = MODNAME .. "/graphics/" .. temp01 .. "-e.png"
+provider02_entity.charge_animation.filename = MODNAME .. "/graphics/" .. temp01 .. "-charge.png"
+provider02_entity.discharge_animation.filename = MODNAME .. "/graphics/" .. temp01 .. "-discharge.png"
+provider02_entity.next_upgrade = nil
+
+local provider02_item = table_deepcopy( provider01_item )
+provider02_item.name = temp01
+provider02_item.icon = temp02
+provider02_item.order = "e[accumulator]-ab[" .. temp01 .. "]"
+provider02_item.place_result = temp01
+
+local provider02_recipe = table_deepcopy( provider01_recipe )
+provider02_recipe.name = temp01
+provider02_recipe.ingredients =
+{
+	{ provider01_item.name, 10 },
+	{ "battery", 50 },
+	{ "processing-unit", 10 }
+}
+provider02_recipe.result = temp01
+
+local electronic_fuel =
+{
+	type = "item",
+	icon = "__base__/graphics/icons/mip/coal.png",
+	icon_size = 64,
+	fuel_category = "electronic",
+	fuel_value = "10MJ",
+	subgroup = "raw-resource",
+	order = "z[energy]",
+	stack_size = 1,
+	enabled = false
+}
+
+temp02 = "electronic-fuel"
+
+local electronic_fuel01 = table_deepcopy( electronic_fuel )
+electronic_fuel01.name = temp02 .. "-01"
+
+local electronic_fuel02 = table_deepcopy( electronic_fuel )
+electronic_fuel02.name = temp02 .. "-02"
+electronic_fuel02.fuel_acceleration_multiplier = 1.2
+electronic_fuel02.fuel_top_speed_multiplier = 1.05
+
+local electronic_fuel03 = table_deepcopy( electronic_fuel )
+electronic_fuel03.name = temp02 .. "-03"
+electronic_fuel03.fuel_acceleration_multiplier = 1.8
+electronic_fuel03.fuel_top_speed_multiplier = 1.15
+
+local electronic_fuel04 = table_deepcopy( electronic_fuel )
+electronic_fuel04.name = temp02 .. "-04"
+electronic_fuel04.fuel_acceleration_multiplier = 2.5
+electronic_fuel04.fuel_top_speed_multiplier = 1.15
+
+local electronic_fuel05 = table_deepcopy( electronic_fuel )
+electronic_fuel05.name = temp02 .. "-05"
+electronic_fuel05.fuel_acceleration_multiplier = 3.5
+electronic_fuel05.fuel_top_speed_multiplier = 1.75
+
+temp02 = "Electronic-Locomotives"
+
+local technology01 = table_deepcopy( data.raw["technology"]["railway"] )
+technology01.name = temp02
+technology01.icon = MODNAME .. "/graphics/tech.png"
+technology01.icon_size = 128
+technology01.effects = { { type = "unlock-recipe", recipe = provider01_recipe.name } }
+technology01.prerequisites = { "railway", "electric-engine", "battery", "electric-energy-distribution-2" }
+technology01.unit =
 {
 	count = 300,
 	ingredients =
@@ -136,138 +163,140 @@ tech.unit =
 		{ "logistic-science-pack", 2 },
 		{ "chemical-science-pack", 1 }
 	},
-	time = 50
+	time = 60
 }
-tech.order = "s-e-t"
+technology01.order = "s-e-l"
 
-local tech2 = utd( tech )
-tech2.name = "Senpais-Electric-Train-2"
-tech2.effects = {}
-tech2.prerequisites = { "Senpais-Electric-Train" }
-tech2.unit.count = 600
-tech2.upgrade = true
-table.insert( tech2.unit.ingredients, { "production-science-pack", 1 } )
+local technology02 = table_deepcopy( technology01 )
+technology02.name = temp02 .. "-2"
+technology02.effects = {}
+technology02.prerequisites = { temp02 }
+technology02.unit.count = 600
+technology02.upgrade = true
 
-local tech3 = utd( tech2 )
-tech3.name = "Senpais-Electric-Train-3"
-tech3.effects = {}
-tech3.prerequisites = { "Senpais-Electric-Train-2" }
-tech3.unit.count = 600
-tech3.localised_description = { "Electronic-Locomotives.Description", 1.2, 1.05 }
+table.insert( technology02.unit.ingredients, { "production-science-pack", 1 } )
 
-local tech4 = utd( tech3 )
-tech4.name = "Senpais-Electric-Train-4"
-tech4.effects = {}
-tech4.prerequisites = { "Senpais-Electric-Train-3" }
-tech4.unit.count = 700
-tech4.localised_description = { "Electronic-Locomotives.Description", 1.8, 1.15 }
-table.insert( tech4.unit.ingredients, { "utility-science-pack", 1 } )
+local technology03 = table_deepcopy( technology02 )
+technology03.name = temp02 .. "-3"
+technology03.effects = {}
+technology03.prerequisites = { technology02.name }
+technology03.unit.count = 700
+technology03.localised_description = { "Electronic.Description", 1.2, 1.05 }
 
-local tech5 = utd( tech4 )
-tech5.name = "Senpais-Electric-Train-5"
-tech5.effects = {}
-tech5.prerequisites = { "Senpais-Electric-Train-4" }
-tech5.unit.count = 800
-tech5.localised_description = { "Electronic-Locomotives.Description", 2.5, 1.15 }
+local technology04 = table_deepcopy( technology03 )
+technology04.name = temp02 .. "-4"
+technology04.prerequisites = { technology03.name }
+technology04.unit.count = 800
+technology04.localised_description = { "Electronic.Description", 1.8, 1.15 }
 
-local tech6 = utd( tech5 )
-tech6.name = "Senpais-Electric-Train-6"
-tech6.effects = {}
-tech6.prerequisites = { "Senpais-Electric-Train-5" }
-tech6.unit.count = 1000
-tech6.localised_description = { "Electronic-Locomotives.Description", 3.5, 1.75 }
-table.insert( tech6.unit.ingredients, { "space-science-pack", 1 } )
+table.insert( technology04.unit.ingredients, { "utility-science-pack", 1 } )
 
-local fi =
+local technology05 = table_deepcopy( technology04 )
+technology05.name = temp02 .. "-5"
+technology05.prerequisites = { technology04.name }
+technology05.unit.count = 800
+technology05.localised_description = { "Electronic.Description", 2.5, 1.15 }
+
+local technology06 = table_deepcopy( technology05 )
+technology06.name = temp02 .. "-6"
+technology06.prerequisites = { technology05.name }
+technology06.unit.count = 1200
+technology06.localised_description = { "Electronic.Description", 3.5, 1.75 }
+
+table.insert( technology06.unit.ingredients, { "space-science-pack", 1 } )
+
+local technology07 = table_deepcopy( technology06 )
+technology07.name = temp02 .. "-7"
+technology07.effects = { { type = "unlock-recipe", recipe = provider02_recipe.name } }
+technology07.prerequisites = { technology06.name }
+technology07.unit.count = 4000
+technology07.localised_description = nil
+
+local braking_force_8 = table_deepcopy( data.raw["technology"]["braking-force-7"] )
+braking_force_8.name = "braking-force-8"
+braking_force_8.effects[1].modifier = 0.30
+braking_force_8.prerequisites = { "braking-force-7" }
+braking_force_8.unit.count = 800
+
+local braking_force_9 = table_deepcopy( data.raw["technology"]["braking-force-7"] )
+braking_force_9.name = "braking-force-9"
+braking_force_9.effects[1].modifier = 0.50
+braking_force_9.prerequisites = { "braking-force-8" }
+braking_force_9.unit.count = 1000
+
+data:extend
 {
-	type = "item",
-	icon = "__base__/graphics/icons/mip/coal.png",
-	icon_size = 64,
-	fuel_category = "electronic",
-	fuel_value = "10MJ",
-	subgroup = "raw-resource",
-    order = "z[energy]",
-    stack_size = 1,
-    enabled = false
-}
-
-local fi_1 = utd( fi )
-fi_1.name = "electronic-fuel-01"
-
-local fi_2 = utd( fi )
-fi_2.name = "electronic-fuel-02"
-fi_2.fuel_acceleration_multiplier = 1.2
-fi_2.fuel_top_speed_multiplier = 1.05
-
-local fi_3 = utd( fi )
-fi_3.name = "electronic-fuel-03"
-fi_3.fuel_acceleration_multiplier = 1.8
-fi_3.fuel_top_speed_multiplier = 1.15
-
-local fi_4 = utd( fi )
-fi_4.name = "electronic-fuel-04"
-fi_4.fuel_acceleration_multiplier = 2.5
-fi_4.fuel_top_speed_multiplier = 1.15
-
-local fi_5 = utd( fi )
-fi_5.name = "electronic-fuel-05"
-fi_5.fuel_acceleration_multiplier = 3.5
-fi_5.fuel_top_speed_multiplier = 1.75
-
-data:extend{
-	ae, ai, ar,
-	tech, tech2, tech3, tech4, tech5, tech6,
 	{ type = "fuel-category", name = "electronic" },
-	fi_1, fi_2, fi_3, fi_4, fi_5
+	provider01_entity, provider01_item, provider01_recipe,
+	provider02_entity, provider02_item, provider02_recipe,
+	electronic_fuel01, electronic_fuel02, electronic_fuel03, electronic_fuel04, electronic_fuel05,
+	technology01, technology02, technology03, technology04, technology05, technology06, technology07,
+	braking_force_8, braking_force_9
 }
 
 Senpais.Functions.Create.Electronic_Locomotive
 (
-	"600kW",
-	"Senpais-Electric-Train",
+	"Electronic-Standard-Locomotive",
 	1000,
 	2000,
 	1.2,
+	"600kW",
 	"#53bb90",
 	nil,
 	"transport",
-	"a[train-system]-faa[Senpais-Electric-Train]",
+	"a[train-system]-faa[Electronic-Standard-Locomotive]",
 	5,
 	{ { "locomotive", 1 }, { "battery", 10 }, { "electric-engine-unit", 20 } },
-	"Senpais-Electric-Train"
+	temp02
 )
 
 Senpais.Functions.Create.Electronic_Locomotive
 (
-	"3000kW",
-	"Senpais-Electric-Train-Heavy",
+	"Electronic-Cargo-Locomotive",
 	2000,
 	5000,
-	1.2,
+	1.4,
+	"3MW",
 	"#a61a1a",
 	nil,
 	"transport",
-	"a[train-system]-fab[Senpais-Electric-Train-Heavy]",
+	"a[train-system]-fab[Electronic-Cargo-Locomotive]",
 	5,
-	{ { "Senpais-Electric-Train", 1 }, { "battery", 20 }, { "electric-engine-unit", 20 } },
-	"Senpais-Electric-Train-2"
+	{ { "Electronic-Standard-Locomotive", 1 }, { "battery", 20 }, { "electric-engine-unit", 20 } },
+	temp02 .. "-2"
 )
 
-if not data.raw["technology"]["braking-force-8"] then
-	local bf8 = utd( data.raw["technology"]["braking-force-7"] )
-	bf8.name = "braking-force-8"
-	bf8.effects = { { type = "train-braking-force-bonus", modifier = 0.30 } }
-	bf8.prerequisites = { "braking-force-7" }
-	bf8.unit.count = 800
+local style = data.raw["gui-style"].default
 
-	data:extend{ bf8 }
-end
-if not data.raw["technology"]["braking-force-9"] then
-	local bf9 = utd( data.raw["technology"]["braking-force-7"] )
-	bf9.name = "braking-force-9"
-	bf9.effects = { { type = "train-braking-force-bonus", modifier = 0.50 } }
-	bf9.prerequisites = { "braking-force-8" }
-	bf9.unit.count = 1000
+style["SenpaisFlowCenter/Left8"] =
+{
+    type = "horizontal_flow_style",
+    horizontally_stretchable = "on",
+    vertical_align = "center",
+    horizontal_align = "left",
+    horizontal_spacing = 8
+}
 
-	data:extend{ bf9 }
-end
+style["SenpaisFlowCenter/Left4"] =
+{
+    type = "horizontal_flow_style",
+    horizontally_stretchable = "on",
+    vertical_align = "center",
+    horizontal_align = "left",
+    horizontal_spacing = 4
+}
+
+style["SenpaisLine4"] =
+{
+    type = "line_style",
+    top_margin = 4,
+    bottom_margin = 4
+}
+
+style["SenpaisToolButton20"] =
+{
+    type = "button_style",
+    parent = "tool_button",
+    size = 20,
+    padding = 0
+}

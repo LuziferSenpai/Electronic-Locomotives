@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 10.10.2019
+  Changes:
+    - Code cleanup
+    - UPS friendlier
+    - Better GUI
+    - You now need a Provider on each Surface
+    - For Modder: I changed the internal entity names
+  New:
+    - Surface support
+    - New Late Game Provider
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 24.07.2019
   Changes:
