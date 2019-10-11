@@ -215,6 +215,8 @@ end
 local MainGUIUpdateProviderList = function()
 	local gui = script_data.GUIS
 
+	if not gui then return end
+
 	for _, player in pairs( game.players ) do
 		local player_id = player.index
 		if next( gui[player_id] ) then
@@ -251,7 +253,7 @@ local MainGUIToggle = function( player_id )
 end
 
 local AddSurface = function( addtype, index_number, name, providers )
-	if addtype == "new" and ( name:find( "^Factory floor" ) or script_data.SurfaceIndexs[index_number] ) then
+	if addtype == "new" and ( name:find( "^Factory floor" ) or name == "_BPEX_Temp_Surface" or script_data.SurfaceIndexs[index_number] ) then
 		return false
 	end
 
