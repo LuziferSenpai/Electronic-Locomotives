@@ -512,6 +512,9 @@ end
 local on_surface_deleted = function( event )
 	local index_number = "S" .. event.surface_index
 	local index = script_data.SurfaceIndexs[index_number]
+
+	if type( index ) ~= "string" then return end
+	
 	local Surfaces = script_data.Surfaces
 
 	script_data.Providers = script_data.Providers - table_size( Surfaces.Providers[index] )
