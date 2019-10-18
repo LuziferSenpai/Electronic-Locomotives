@@ -367,7 +367,7 @@ local on_tick = function()
 						burner.currently_burning = Fuel
 						burner.remaining_burning_fuel = FuelValue
 
-						if entity.speed == 0 then
+						if entity.speed == 0 and entity.train.state == dt.manual_control then
 							script_data.Where[index] = nil
 							script_data.EnergyAll[index] = nil
 						else
