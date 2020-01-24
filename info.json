@@ -1,10 +1,10 @@
 {
     "name": "Electronic_Locomotives",
-    "version": "0.3.4",
+    "version": "0.3.5",
     "title": "Electronic Locomotives",
     "author": "LuziferSenpai",
     "contact": "mods@luzifersenpai.de",
     "description": "This Modification adds 2 new Locomotives, that uses Electricity as Fuel!",
     "dependencies": ["base"],
-    "factorio_version": "0.17"
+    "factorio_version": "0.18"
 }

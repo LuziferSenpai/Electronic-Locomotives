@@ -8,6 +8,8 @@ local temp02 = MODNAME .. "/graphics/" .. temp01 .. "-i.png"
 local provider01_entity = table_deepcopy( data.raw["electric-energy-interface"]["electric-energy-interface"] )
 provider01_entity.name = temp01
 provider01_entity.icon = temp02
+provider01_entity.icon_size = 32
+provider01_entity.icon_mipmap = nil
 provider01_entity.icons = nil
 provider01_entity.subgroup = nil
 provider01_entity.minable.result = temp01
@@ -58,6 +60,8 @@ provider01_entity.next_upgrade = "Electronic-Energy-Provider-2"
 local provider01_item = table_deepcopy( data.raw["item"]["accumulator"] )
 provider01_item.name = temp01
 provider01_item.icon = temp02
+provider01_item.icon_size = 32
+provider01_item.icon_mipmap = nil
 provider01_item.order = "e[accumulator]-aa[" .. temp01 .. "]"
 provider01_item.place_result = temp01
 
@@ -77,6 +81,8 @@ temp02 = MODNAME .. "/graphics/" .. temp01 .. "-i.png"
 local provider02_entity = table_deepcopy( provider01_entity )
 provider02_entity.name = temp01
 provider02_entity.icon = temp02
+provider02_entity.icon_size = 32
+provider02_entity.icon_mipmap = nil
 provider02_entity.minable.result = temp01
 provider02_entity.energy_source =
 {
@@ -95,6 +101,8 @@ provider02_entity.next_upgrade = nil
 local provider02_item = table_deepcopy( provider01_item )
 provider02_item.name = temp01
 provider02_item.icon = temp02
+provider02_item.icon_size = 32
+provider02_item.icon_mipmap = nil
 provider02_item.order = "e[accumulator]-ab[" .. temp01 .. "]"
 provider02_item.place_result = temp01
 
@@ -111,8 +119,9 @@ provider02_recipe.result = temp01
 local electronic_fuel =
 {
 	type = "item",
-	icon = "__base__/graphics/icons/mip/coal.png",
-	icon_size = 64,
+	icon = "__base__/graphics/icons/coal.png",
+    icon_size = 64,
+    icon_mipmaps = 4,
 	fuel_category = "electronic",
 	fuel_value = "10MJ",
 	subgroup = "raw-resource",
@@ -152,6 +161,7 @@ local technology01 = table_deepcopy( data.raw["technology"]["railway"] )
 technology01.name = temp02
 technology01.icon = MODNAME .. "/graphics/tech.png"
 technology01.icon_size = 128
+technology01.icon_mipmap = nil
 technology01.effects = { { type = "unlock-recipe", recipe = provider01_recipe.name } }
 technology01.prerequisites = { "railway", "electric-engine", "battery", "electric-energy-distribution-2" }
 technology01.unit =
