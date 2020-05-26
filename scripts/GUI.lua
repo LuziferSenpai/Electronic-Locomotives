@@ -59,7 +59,7 @@ GUI.Main = function( parent )
 	{
 		["01"] = AddLabel( A["02"]["01"], "ElectronicLabelAGUI01", { "Electronic.Title" }, "frame_title" ),
 		["02"] = AddWidget( A["02"]["01"], "ElectronicWidgetAGUI01", "draggable_space_header" ),
-		["03"] = AddSpriteButton( A["02"]["01"], "ElectronicSpriteButtonAGUI01", "utility/close_white", "close_button" ),
+		["03"] = AddSpriteButton( A["02"]["01"], "ElectronicSpriteButtonAGUI01", "utility/close_white", "frame_action_button" ),
 
 		["04"] = AddSpriteButton( A["02"]["03"], "ElectronicSpriteButtonAGUI02", "utility/refresh", "SenpaisToolButton20" ),
 		["05"] = AddCheckbox( A["02"]["03"], "ElectronicCheckboxAGUI01", { "Electronic.On/Off" }, "caption_checkbox" ),

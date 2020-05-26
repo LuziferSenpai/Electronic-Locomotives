@@ -253,7 +253,7 @@ local MainGUIToggle = function( player_id )
 end
 
 local AddSurface = function( addtype, index_number, name, providers )
-	if addtype == "new" and ( name:find( "^Factory floor" ) or name == "_BPEX_Temp_Surface" or script_data.SurfaceIndexs[index_number] ) then
+	if addtype == "new" and ( name:find( "^Factory floor" ) or name == "_BPEX_Temp_Surface" or name == "bp-editor-surface" or script_data.SurfaceIndexs[index_number] ) then
 		return false
 	end
 
@@ -388,7 +388,7 @@ local on_tick = function()
 
 		for index, loco_table in pairs( Energy ) do
 			if index ~= "more" and index ~= "1" then
-				index_number = "" .. tonumber( index ) - 1
+				local index_number = "" .. tonumber( index ) - 1
 
 				for unit_number in pairs( loco_table ) do
 					Where[unit_number] = index_number
@@ -434,6 +434,8 @@ local on_created_entity = function( event )
 	local surface = entity.surface
 
 	if surface.name:find( "^Factory floor" ) then return end
+
+	if type( entity.unit_number ) ~= "number" then return end
 
 	local name = entity.name
 	local unit_number = "E" .. entity.unit_number

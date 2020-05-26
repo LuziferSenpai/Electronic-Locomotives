@@ -114,6 +114,7 @@ provider02_recipe.ingredients =
 	{ "battery", 50 },
 	{ "processing-unit", 10 }
 }
+
 provider02_recipe.result = temp01
 
 local electronic_fuel =

@@ -1,4 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.8
+Date: 26.05.2020
+  Bugfixes:
+    - Fixed GUI because of 0.18.27
+---------------------------------------------------------------------------------------------------
+Version: 0.3.7
+Date: 24.04.2020
+  Bugfixes:
+    - Quickly fixed possible bugs with Edit-Blueprints
+---------------------------------------------------------------------------------------------------
+Version: 0.3.6
+Date: 11.03.2020
+  Bugfixes:
+    - Fixed a Bug with unit_number
+---------------------------------------------------------------------------------------------------
 Version: 0.3.5
 Date: 24.01.2020
   Changes:
@@ -32,7 +47,7 @@ Date: 10.10.2019
     - Better GUI
     - You now need a Provider on each Surface
     - For Modder: I changed the internal entity names
-  New:
+  Features:
     - Surface support
     - New Late Game Provider
 ---------------------------------------------------------------------------------------------------
@@ -43,7 +58,7 @@ Date: 24.07.2019
     - UPS friendlier
     - Better GUI
     - Better remote
-  New:
+  Features:
     - Acceleration support
     - Top Speed support
 ---------------------------------------------------------------------------------------------------
@@ -53,10 +68,10 @@ Date: 22.06.2019
     - A little Code cleanup
     - New Color Masks
 ---------------------------------------------------------------------------------------------------
-Version 0.1.0
+Version: 0.1.0
 Date: 20.05.2019
-	Features:
-	 - A Electronic Base Tier Locomotive
-	 - A Electronic Cargo Tier Locomotive
-	 - A Electric Provider
-	 - Tier 8 & 9 Braking Force
+  Features:
+    - A Electronic Base Tier Locomotive
+    - A Electronic Cargo Tier Locomotive
+    - A Electric Provider
+    - Tier 8 & 9 Braking Force
