@@ -28,6 +28,13 @@ local RegisterLoco =
 	["Electronic-Cargo-Locomotive"] = "more"
 }
 
+local BlacklistSurfaces =
+{
+	["_BPEX_Temp_Surface"] = true,
+	["bp-editor-surface"] = true,
+	["trainConstructionSite"] = true
+}
+
 local script_data =
 {
 	Register =
@@ -253,7 +260,7 @@ local MainGUIToggle = function( player_id )
 end
 
 local AddSurface = function( addtype, index_number, name, providers )
-	if addtype == "new" and ( name:find( "^Factory floor" ) or name == "_BPEX_Temp_Surface" or name == "bp-editor-surface" or script_data.SurfaceIndexs[index_number] ) then
+	if addtype == "new" and ( name:find( "^Factory floor" ) or BlacklistSurfaces[name] or script_data.SurfaceIndexs[index_number] ) then
 		return false
 	end
 
@@ -440,7 +447,7 @@ local on_created_entity = function( event )
 	local name = entity.name
 	local unit_number = "E" .. entity.unit_number
 
-	if script_data.Register.Providers[name] then		
+	if script_data.Register.Providers[name] then
 		script_data.Surfaces.Providers[script_data.SurfaceIndexs["S" .. surface.index]][unit_number] = entity
 		script_data.Providers = script_data.Providers + 1
 	elseif script_data.Register.Locomotives[name] then
@@ -483,7 +490,7 @@ local on_player_removed = function( event )
 	local player_id = event.player_index
 
 	script_data.Position[player_id] = nil
-	script_data.GUI[player_id] = nil
+	script_data.GUIS[player_id] = nil
 	script_data.Visible[player_id] = nil
 	script_data.UpdateLoco[player_id] = nil
 	script_data.UpdateProvider[player_id] = nil

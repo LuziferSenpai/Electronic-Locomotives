@@ -40,7 +40,7 @@ end
 GUI.Main = function( parent )
 	local A = {}
 
-	A["01"] = AddFrame( parent, "ElectronicFrameAGUI01", "dialog_frame" )
+	A["01"] = AddFrame( parent, "ElectronicFrameAGUI01" )
 	A["02"] =
 	{
 		["01"] = AddFlow( A["01"], "ElectronicFlowAGUI01", "horizontal", "SenpaisFlowCenter/Left8" ),

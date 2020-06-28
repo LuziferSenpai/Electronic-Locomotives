@@ -128,33 +128,39 @@ local electronic_fuel =
 	subgroup = "raw-resource",
 	order = "z[energy]",
 	stack_size = 1,
-	enabled = false
+	enabled = false,
+	hidden = true
 }
 
 temp02 = "electronic-fuel"
 
 local electronic_fuel01 = table_deepcopy( electronic_fuel )
 electronic_fuel01.name = temp02 .. "-01"
+electronic_fuel01.localised_name = { "Electronic.Fuel", "01" }
 
 local electronic_fuel02 = table_deepcopy( electronic_fuel )
 electronic_fuel02.name = temp02 .. "-02"
 electronic_fuel02.fuel_acceleration_multiplier = 1.2
 electronic_fuel02.fuel_top_speed_multiplier = 1.05
+electronic_fuel02.localised_name = { "Electronic.Fuel", "02" }
 
 local electronic_fuel03 = table_deepcopy( electronic_fuel )
 electronic_fuel03.name = temp02 .. "-03"
 electronic_fuel03.fuel_acceleration_multiplier = 1.8
 electronic_fuel03.fuel_top_speed_multiplier = 1.15
+electronic_fuel03.localised_name = { "Electronic.Fuel", "03" }
 
 local electronic_fuel04 = table_deepcopy( electronic_fuel )
 electronic_fuel04.name = temp02 .. "-04"
 electronic_fuel04.fuel_acceleration_multiplier = 2.5
 electronic_fuel04.fuel_top_speed_multiplier = 1.15
+electronic_fuel04.localised_name = { "Electronic.Fuel", "04" }
 
 local electronic_fuel05 = table_deepcopy( electronic_fuel )
 electronic_fuel05.name = temp02 .. "-05"
 electronic_fuel05.fuel_acceleration_multiplier = 3.5
 electronic_fuel05.fuel_top_speed_multiplier = 1.75
+electronic_fuel05.localised_name = { "Electronic.Fuel", "05" }
 
 temp02 = "Electronic-Locomotives"
 
