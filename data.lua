@@ -241,6 +241,19 @@ braking_force_9.effects[1].modifier = 0.50
 braking_force_9.prerequisites = { "braking-force-8" }
 braking_force_9.unit.count = 1000
 
+local braking_force_10 = table_deepcopy( data.raw["technology"]["braking-force-7"] )
+braking_force_10.name = "braking-force-10"
+braking_force_10.effects[1].modifier = 0.70
+braking_force_10.prerequisites = { "braking-force-9" }
+braking_force_10.unit.count = 1000
+
+local braking_force_11 = table_deepcopy( data.raw["technology"]["braking-force-7"] )
+braking_force_11.name = "braking-force-11"
+braking_force_11.effects[1].modifier = 0.90
+braking_force_11.prerequisites = { "braking-force-10" }
+braking_force_11.unit.count = 1000
+
+
 data:extend
 {
 	{ type = "fuel-category", name = "electronic" },
@@ -248,7 +261,7 @@ data:extend
 	provider02_entity, provider02_item, provider02_recipe,
 	electronic_fuel01, electronic_fuel02, electronic_fuel03, electronic_fuel04, electronic_fuel05,
 	technology01, technology02, technology03, technology04, technology05, technology06, technology07,
-	braking_force_8, braking_force_9
+	braking_force_8, braking_force_9, braking_force_10, braking_force_11
 }
 
 Senpais.Functions.Create.Electronic_Locomotive
