@@ -5,7 +5,7 @@ local table_deepcopy = util.table.deepcopy
 local temp01 = "Electronic-Energy-Provider"
 local temp02 = MODNAME .. "/graphics/" .. temp01 .. "-i.png"
 
-local provider01_entity = table_deepcopy( data.raw["electric-energy-interface"]["electric-energy-interface"] )
+local provider01_entity = table_deepcopy(data.raw["electric-energy-interface"]["electric-energy-interface"])
 provider01_entity.name = temp01
 provider01_entity.icon = temp02
 provider01_entity.icon_size = 32
@@ -16,8 +16,7 @@ provider01_entity.minable.result = temp01
 provider01_entity.enable_gui = false
 provider01_entity.gui_mode = "none"
 provider01_entity.allow_copy_paste = false
-provider01_entity.energy_source =
-{
+provider01_entity.energy_source = {
 	type = "electric",
 	buffer_capacity = "200MJ",
 	usage_priority = "primary-input",
@@ -26,38 +25,35 @@ provider01_entity.energy_source =
 }
 provider01_entity.energy_production = "0kW"
 provider01_entity.energy_usage = "0kW"
-provider01_entity.picture =
-{
+provider01_entity.picture = {
 	filename = MODNAME .. "/graphics/" .. temp01 .. "-e.png",
 	priority = "extra-high",
 	width = 124,
 	height = 103,
-	shift = { 0.6875, -0.203125 }
+	shift = {0.6875, -0.203125}
 }
-provider01_entity.charge_animation =
-{
+provider01_entity.charge_animation = {
 	filename = MODNAME .. "/graphics/" .. temp01 .. "-charge.png",
 	width = 138,
 	height = 135,
 	line_length = 8,
 	frame_count = 24,
-	shift = { 0.46875, -0.640625 },
+	shift = {0.46875, -0.640625},
 	animation_speed = 0.5
 }
-provider01_entity.discharge_animation =
-{
+provider01_entity.discharge_animation = {
 	filename = MODNAME .. "/graphics/" .. temp01 .. "discharge.png",
 	width = 147,
 	height = 128,
 	line_length = 8,
 	frame_count = 24,
-	shift = { 0.390625, -0.53125 },
+	shift = {0.390625, -0.53125},
 	animation_speed = 0.5
 }
 provider01_entity.fast_replaceable_group = "electronic-provider"
 provider01_entity.next_upgrade = "Electronic-Energy-Provider-2"
 
-local provider01_item = table_deepcopy( data.raw["item"]["accumulator"] )
+local provider01_item = table_deepcopy(data.raw["item"]["accumulator"])
 provider01_item.name = temp01
 provider01_item.icon = temp02
 provider01_item.icon_size = 32
@@ -65,27 +61,25 @@ provider01_item.icon_mipmap = nil
 provider01_item.order = "e[accumulator]-aa[" .. temp01 .. "]"
 provider01_item.place_result = temp01
 
-local provider01_recipe = table_deepcopy( data.raw["recipe"]["accumulator"] )
+local provider01_recipe = table_deepcopy(data.raw["recipe"]["accumulator"])
 provider01_recipe.name = temp01
-provider01_recipe.ingredients =
-{
-	{ "accumulator", 5 },
-	{ "battery", 10 },
-	{ "electronic-circuit", 20 }
+provider01_recipe.ingredients = {
+	{"accumulator", 5},
+	{"battery", 10},
+	{"electronic-circuit", 20}
 }
 provider01_recipe.result = temp01
 
 temp01 = "Electronic-Energy-Provider-2"
 temp02 = MODNAME .. "/graphics/" .. temp01 .. "-i.png"
 
-local provider02_entity = table_deepcopy( provider01_entity )
+local provider02_entity = table_deepcopy(provider01_entity)
 provider02_entity.name = temp01
 provider02_entity.icon = temp02
 provider02_entity.icon_size = 32
 provider02_entity.icon_mipmap = nil
 provider02_entity.minable.result = temp01
-provider02_entity.energy_source =
-{
+provider02_entity.energy_source = {
 	type = "electric",
 	buffer_capacity = "10GJ",
 	usage_priority = "primary-input",
@@ -98,7 +92,7 @@ provider02_entity.charge_animation.filename = MODNAME .. "/graphics/" .. temp01 
 provider02_entity.discharge_animation.filename = MODNAME .. "/graphics/" .. temp01 .. "-discharge.png"
 provider02_entity.next_upgrade = nil
 
-local provider02_item = table_deepcopy( provider01_item )
+local provider02_item = table_deepcopy(provider01_item)
 provider02_item.name = temp01
 provider02_item.icon = temp02
 provider02_item.icon_size = 32
@@ -106,19 +100,17 @@ provider02_item.icon_mipmap = nil
 provider02_item.order = "e[accumulator]-ab[" .. temp01 .. "]"
 provider02_item.place_result = temp01
 
-local provider02_recipe = table_deepcopy( provider01_recipe )
+local provider02_recipe = table_deepcopy(provider01_recipe)
 provider02_recipe.name = temp01
-provider02_recipe.ingredients =
-{
-	{ provider01_item.name, 10 },
-	{ "battery", 50 },
-	{ "processing-unit", 10 }
+provider02_recipe.ingredients = {
+	{provider01_item.name, 10},
+	{"battery", 50},
+	{"processing-unit", 10}
 }
 
 provider02_recipe.result = temp01
 
-local electronic_fuel =
-{
+local electronic_fuel = {
 	type = "item",
 	icon = "__base__/graphics/icons/coal.png",
     icon_size = 64,
@@ -134,60 +126,58 @@ local electronic_fuel =
 
 temp02 = "electronic-fuel"
 
-local electronic_fuel01 = table_deepcopy( electronic_fuel )
+local electronic_fuel01 = table_deepcopy(electronic_fuel)
 electronic_fuel01.name = temp02 .. "-01"
-electronic_fuel01.localised_name = { "Electronic.Fuel", "01" }
+electronic_fuel01.localised_name = {"Electronic.Fuel", "01"}
 
-local electronic_fuel02 = table_deepcopy( electronic_fuel )
+local electronic_fuel02 = table_deepcopy(electronic_fuel)
 electronic_fuel02.name = temp02 .. "-02"
 electronic_fuel02.fuel_acceleration_multiplier = 1.2
 electronic_fuel02.fuel_top_speed_multiplier = 1.05
-electronic_fuel02.localised_name = { "Electronic.Fuel", "02" }
+electronic_fuel02.localised_name = {"Electronic.Fuel", "02"}
 
-local electronic_fuel03 = table_deepcopy( electronic_fuel )
+local electronic_fuel03 = table_deepcopy(electronic_fuel)
 electronic_fuel03.name = temp02 .. "-03"
 electronic_fuel03.fuel_acceleration_multiplier = 1.8
 electronic_fuel03.fuel_top_speed_multiplier = 1.15
-electronic_fuel03.localised_name = { "Electronic.Fuel", "03" }
+electronic_fuel03.localised_name = {"Electronic.Fuel", "03"}
 
-local electronic_fuel04 = table_deepcopy( electronic_fuel )
+local electronic_fuel04 = table_deepcopy(electronic_fuel)
 electronic_fuel04.name = temp02 .. "-04"
 electronic_fuel04.fuel_acceleration_multiplier = 2.5
 electronic_fuel04.fuel_top_speed_multiplier = 1.15
-electronic_fuel04.localised_name = { "Electronic.Fuel", "04" }
+electronic_fuel04.localised_name = {"Electronic.Fuel", "04"}
 
-local electronic_fuel05 = table_deepcopy( electronic_fuel )
+local electronic_fuel05 = table_deepcopy(electronic_fuel)
 electronic_fuel05.name = temp02 .. "-05"
 electronic_fuel05.fuel_acceleration_multiplier = 3.5
 electronic_fuel05.fuel_top_speed_multiplier = 1.75
-electronic_fuel05.localised_name = { "Electronic.Fuel", "05" }
+electronic_fuel05.localised_name = {"Electronic.Fuel", "05"}
 
 temp02 = "Electronic-Locomotives"
 
-local technology01 = table_deepcopy( data.raw["technology"]["railway"] )
+local technology01 = table_deepcopy(data.raw["technology"]["railway"])
 technology01.name = temp02
 technology01.icon = MODNAME .. "/graphics/tech.png"
 technology01.icon_size = 128
 technology01.icon_mipmap = nil
-technology01.effects = { { type = "unlock-recipe", recipe = provider01_recipe.name } }
-technology01.prerequisites = { "railway", "electric-engine", "battery", "electric-energy-distribution-2" }
-technology01.unit =
-{
+technology01.effects = {{type = "unlock-recipe", recipe = provider01_recipe.name}}
+technology01.prerequisites = {"railway", "electric-engine", "battery", "electric-energy-distribution-2"}
+technology01.unit = {
 	count = 300,
-	ingredients =
-	{
-		{ "automation-science-pack", 2 },
-		{ "logistic-science-pack", 2 },
-		{ "chemical-science-pack", 1 }
+	ingredients = {
+		{"automation-science-pack", 2},
+		{"logistic-science-pack", 2},
+		{"chemical-science-pack", 1}
 	},
 	time = 60
 }
 technology01.order = "s-e-l"
 
-local technology02 = table_deepcopy( technology01 )
+local technology02 = table_deepcopy(technology01)
 technology02.name = temp02 .. "-2"
 technology02.effects = {}
-technology02.prerequisites = { temp02 }
+technology02.prerequisites = {temp02}
 technology02.unit.count = 600
 technology02.upgrade = true
 
