@@ -1,6 +1,6 @@
 {
     "name": "Electronic_Locomotives",
-    "version": "0.3.13",
+    "version": "0.3.14",
     "title": "Electronic Locomotives",
     "author": "LuziferSenpai",
     "contact": "mods@luzifersenpai.de",
@@ -8,7 +8,7 @@
     "dependencies":
     [
         "base >= 0.18.27",
-        "? angelsindustries >= 0.4.3"
+        "(?) angelsindustries >= 0.4.3"
     ],
     "factorio_version": "0.18"
 }

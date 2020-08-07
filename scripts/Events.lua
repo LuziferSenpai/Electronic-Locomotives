@@ -379,6 +379,11 @@ local on_tick = function()
 							script_data.EnergyAll[index] = nil
 						else
 							local where = entry_table[entity.name]
+
+							if not where then
+								remote.call("AddElectronicLocomotive", "new", entity.name)
+								where = entry_table[entity.name]
+							end
 							
 							Energy[where][index] = entity
 							Where[index] = where
