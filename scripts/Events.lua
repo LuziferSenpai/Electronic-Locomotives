@@ -1,773 +1,699 @@
 require "mod-gui"
 require "util"
 
-local GUI = require "GUI"
-local de = defines.events
-local dt = defines.train_state
-local Format = string.format
-local FuelValue = 10000000
-local Watt =
-{
-	["watt1"] = "kW",
-	["watt2"] = "MW",
-	["watt3"] = "GW",
-	["Watt4"] = "TW"
+local player_lib = require "scripts/player"
+local definesevents = defines.events
+local definesstate = defines.train_state
+local floor = math.floor
+local match = "electronic_loco_register_add_"
+local fuelvalue = 10000000
+local watt = {
+    ["watt1"] = "kW",
+    ["watt2"] = "MW",
+    ["watt3"] = "GW",
+    ["Watt4"] = "TW"
 }
-local Joule =
-{
-	["joule1"] = "J",
-	["joule2"] = "kJ",
-	["joule3"] = "MJ",
-	["joule4"] = "GJ",
-	["joule5"] = "TJ"
+local joule = {
+    ["joule1"] = "J",
+    ["joule2"] = "kJ",
+    ["joule3"] = "MJ",
+    ["joule4"] = "GJ",
+    ["joule5"] = "TJ"
 }
-
-local RegisterLoco =
-{
-	["Electronic-Standard-Locomotive"] = "more",
-	["Electronic-Cargo-Locomotive"] = "more"
+local provider_register = {
+    ["Electronic-Energy-Provider"] = true,
+    ["Electronic-Energy-Provider-2"] = true
 }
-
-local BlacklistSurfaces =
-{
-	["_BPEX_Temp_Surface"] = true,
-	["bp-editor-surface"] = true,
-	["trainConstructionSite"] = true
+local loco_register = {
+    ["Electronic-Standard-Locomotive"] = "more",
+    ["Electronic-Cargo-Locomotive"] = "more"
 }
-
-local script_data =
-{
-	Register =
-	{
-		Providers =
-		{
-			["Electronic-Energy-Provider"] = true,
-			["Electronic-Energy-Provider-2"] = true
-		},
-		Locomotives = util.table.deepcopy( RegisterLoco )
-	},
-	Fuel = "electronic-fuel-01",
-	
-	Energy =
-	{
-		["1"] = {}, ["2"] = {}, ["3"] = {}, ["4"] = {}, ["5"] = {},
-		["6"] = {}, ["7"] = {}, ["8"] = {}, ["9"] = {}, ["10"] = {},
-		["more"] = {},
-	},
-	Where = {},
-	EnergyAll = {},
-
-	Locomotives = {},
-	Providers = 0,
-	EnergyTick = 0,
-
-	SurfaceIndexs = {},
-	Surfaces =
-	{
-		Number = 0,
-		Names = {},
-		Indexs = {},
-		Providers = {}
-	},
-
-	--PlayerData
-	GUIS = {},
-	Position = {},
-	Visible = {},
-	UpdateLoco = {},
-	UpdateProvider = {}
+local loco_lookup = {
+    ["Electronic-Standard-Locomotive"] = 600,
+    ["Electronic-Cargo-Locomotive"] = 3000
+}
+local blacklistsurfaces = {
+    ["_BPEX_Temp_Surface"] = true,
+    ["bp-editor-surface"] = true,
+    ["trainConstructionSite"] = true
+}
+local script_data = {
+    players = {},
+    fuel = "electronic-fuel-01",
+    energy = {["1"] = {}, ["2"] = {}, ["3"] = {}, ["4"] = {}, ["5"] = {}, ["6"] = {}, ["7"] = {}, ["8"] = {}, ["9"] = {}, ["10"] = {}, ["more"] = {}},
+    where = {},
+    energyall = {},
+    locomotives = {},
+    providers = 0,
+    energytick = 0,
+    surfaces = {},
+    surfacenames = {},
+    names = {}
 }
 
-local CheckProviders = function( index_number, amount )
-	local ProviderTable = script_data.Surfaces.Providers[index_number]
+for name, setting in pairs(settings.startup) do
+    if name:find(match) then
+        local data = util.split(setting.value, "_")
+        local loconame = name:sub(match:len() + 1)
 
-	for index, entity in pairs( ProviderTable ) do
-		if entity.valid then
-			local energy = entity.energy
-
-			if energy >= amount then
-				entity.energy = energy - amount
-
-				return true
-			end
-		else
-			script_data.Surfaces.Providers[index_number][index] = nil
-			script_data.Providers = script_data.Providers - 1
-		end
-	end
-
-	return false
+        loco_register[loconame] = data[1]
+        loco_lookup[loconame] = tonumber(data[2])
+    end
 end
 
-local Round = function(number, decimals )
-	local multiplier = 10 ^ decimals
+local function checkproviders(index, amount)
+    local providers = script_data.surfaces[index].providers
 
-	return math.floor( number * multiplier + 0.5 ) / multiplier
+    for index_number, data in pairs(providers) do
+        local entity = data.entity
+
+        if entity.valid then
+            local energy = entity.energy
+
+            if energy >= amount then
+                entity.energy = energy - amount
+
+                return 0
+            else
+                amount = amount - energy
+                entity.energy = 0
+            end
+        else
+            providers[index_number] = nil
+            script_data.providers = script_data.providers - 1
+        end
+    end
+
+    return amount
 end
 
-local Remove = function( index_number )
-	local where = script_data.Where[index_number]
+local function round(number, decimals)
+    local multiplier = 10 ^ decimals
 
-	if where then
-		script_data.Energy[where][index_number] = nil
-		script_data.Where[index_number] = nil
-	end
-
-	script_data.EnergyAll[index_number] = nil
-	script_data.Locomotives[index_number] = nil
+    return floor(number * multiplier + 0.5) / multiplier
 end
 
-local MainGUIUpdateLocos = function( player_id )
-	local gui = script_data.GUIS[player_id].A["03"]
-	local energy = 0
-	local data = 1
+local function remove(index)
+    local where = script_data.where[index]
 
-	for index_number, entity in pairs( script_data.Locomotives ) do
-		if not entity.valid then
-			Remove( index_number )
-		end
-	end
+    if where then
+        script_data.energy[where][index] = nil
+        script_data.where[index] = nil
+    end
 
-	for index_number, entity in pairs( script_data.EnergyAll ) do
-		if entity.valid then
-			energy = energy + ( entity.burner.heat_capacity * 0.05625 )
-		else
-			Remove( index_number )
-		end
-	end
-
-	while ( energy > 1000 and data < 5 ) do
-		energy = energy / 1000
-		data = data + 1
-	end
-
-	gui["07"].caption = table_size( script_data.Locomotives )
-	gui["09"].caption = table_size( script_data.EnergyAll )
-	gui["11"].caption = { "Electronic." .. Watt["watt" .. data], energy }
+    script_data.energyall[index] = nil
+    script_data.locomotives[index] = nil
 end
 
-local MainGUIUpdateProviders = function( player_id )
-	local gui = script_data.GUIS[player_id].A
-	local selected_index = gui["03"]["14"].selected_index
-	
-	if selected_index < 1 then
-		gui["03"]["14"].selected_index = 1
-		selected_index = 1
-	end
-	
-	local index = Format( "%05d", selected_index )
-	local energyin = 0
-	local storageenergy = 0
-	local storageenergy2 = 0
-	local intakeenergy = 0
-	local data = { energyin = 1, storageenergy = 1, intakeenergy = 1 }
-	
-	for index_number, entity in pairs( script_data.Surfaces.Providers[index] ) do
-		if entity.valid then
-			local energy = entity.energy
-			local energy_prototype = entity.prototype.electric_energy_source_prototype
-			local buffer_capacity = energy_prototype.buffer_capacity
-			
-			energyin = energyin + energy
-			storageenergy = storageenergy + buffer_capacity
-			storageenergy2 = storageenergy2 + buffer_capacity
+local function guilocotable()
+    local energy = 0
+    local data = 1
 
-			if energy < buffer_capacity then
-				intakeenergy = intakeenergy + energy_prototype.input_flow_limit
-			end
-		else
-			script_data.Surfaces.Providers[index][index_number] = nil
-			script_data.Providers = script_data.Providers - 1
-		end
-	end
+    for index, entity in pairs(script_data.locomotives) do
+        if not entity.valid then
+            remove(index)
+        end
+    end
 
-	while ( energyin > 1000 and data.energyin < 5 ) do
-		energyin = energyin / 1000
-		storageenergy2 = storageenergy2 / 1000
-		data.energyin = data.energyin + 1
-	end
+    for index, name in pairs(script_data.energyall) do
+        energy = energy + loco_lookup[name]
+    end
 
-	while ( storageenergy > 1000 and data.storageenergy < 5 ) do
-		storageenergy = storageenergy / 1000
-		data.storageenergy = data.storageenergy + 1
-	end
+    while (energy > 1000 and data < 5) do
+        energy = energy / 1000
+        data = data + 1
+    end
 
-	intakeenergy = intakeenergy * 0.06
-
-	while ( intakeenergy > 1000 and data.intakeenergy < 4 ) do
-		intakeenergy = intakeenergy / 1000
-		data.intakeenergy = data.intakeenergy + 1
-	end
-
-	local provideramount = table_size( script_data.Surfaces.Providers[index] )
-	local gui2 = gui["04"]["05"]
-
-	energyin = Round( energyin, 2 )
-	storageenergy2 = Round( storageenergy2, 2 )
-
-	if provideramount > 0 then
-		gui2.value = energyin / storageenergy2
-	else
-		gui2.value = 0
-	end
-
-	gui = gui["05"]
-
-	gui["02"].caption = provideramount
-	gui["04"].caption = { "Electronic." .. Joule["joule" .. data.energyin], energyin }
-	gui["06"].caption = { "Electronic." .. Joule["joule" .. data.storageenergy], Round( storageenergy, 2 ) }
-	gui["08"].caption = { "Electronic." .. Watt["watt" .. data.intakeenergy], Round( intakeenergy, 1 ) }
+    return {locomotives = table_size(script_data.locomotives), energyall = table_size(script_data.energyall), energy = {watt["watt" .. data], energy}}
 end
 
-local MainGUIUpdateProviderList = function()
-	local gui = script_data.GUIS
+local function guiprovidertable(index)
+    local providers = script_data.surfaces[index].providers
+    local energyin = 0
+    local storageenergy = 0
+    local storageenergy2 = 0
+    local intakeenergy = 0
+    local dataenergyin = 1
+    local datastorageenergy = 1
+    local dataintakeenergy = 1
+    local value = 0
 
-	if not gui then return end
+    for index_number, data in pairs(providers) do
+        local entity = data.entity
 
-	for _, player in pairs( game.players ) do
-		local player_id = player.index
-		if next( gui[player_id] ) then
-			gui[player_id].A["03"]["14"].items = script_data.Surfaces.Names
+        if entity.valid then
+            local energy = entity.energy
+            local energy_prototype = data.energy_prototype
+            local buffer_capacity = energy_prototype.buffer_capacity
 
-			MainGUIUpdateProviders( player_id )
-		end
-	end
+            energyin = energyin + energy
+            storageenergy = storageenergy + buffer_capacity
+
+            if energy < buffer_capacity then
+                intakeenergy = intakeenergy + energy_prototype.input_flow_limit
+            end
+        else
+            providers[index_number] = nil
+            script_data.providers = script_data.providers - 1
+        end
+    end
+
+    storageenergy2 = storageenergy
+    intakeenergy = intakeenergy * 0.06
+
+    local provideramount = table_size(providers)
+
+    while (energyin > 1000 and dataenergyin < 5) do
+        energyin = energyin / 1000
+        storageenergy2 = storageenergy2 / 1000
+        dataenergyin = dataenergyin + 1
+    end
+
+    while (storageenergy > 1000 and datastorageenergy < 5) do
+        storageenergy = storageenergy / 1000
+        datastorageenergy = datastorageenergy + 1
+    end
+
+    while (intakeenergy > 1000 and dataintakeenergy < 4) do
+        intakeenergy = intakeenergy / 1000
+        dataintakeenergy = dataintakeenergy + 1
+    end
+
+    energyin = round(energyin, 2)
+
+    if provideramount > 0 then
+        value = energyin / storageenergy2
+    end
+
+    return {value = value, amount = provideramount, energyin = {joule["joule" .. dataenergyin], energyin}, storageenergy = {joule["joule" .. datastorageenergy], storageenergy}, intakeenergy = {watt["watt" .. dataintakeenergy], round(intakeenergy, 1)}}
 end
 
-local MainGUIToggle = function( player_id )
-	local player = game.players[player_id]
-	local screen = player.gui.screen
+local function updatelist()
+    local cache = {}
 
-	if screen.ElectronicFrameAGUI01 then
-		local gui = script_data.GUIS[player_id].A["01"]
+    for _, playermeta in pairs(script_data.players) do
+        if playermeta.frame then
+            local listbox = playermeta.listbox
+            local selected_index = playermeta.selected_index
 
-		gui.visible = not gui.visible
-	else
-		local gui = GUI.Main( screen )
+            listbox.items = script_data.surfacenames
 
-		gui["01"].location = script_data.Position[player_id]
-		gui["03"]["14"].items = script_data.Surfaces.Names
-		gui["03"]["14"].selected_index = 1
-		
-		script_data.GUIS[player_id].A = gui
+            if selected_index == 0 then
+                selected_index = 1
+                listbox.selected_index = 1
+                playermeta.selected_index = 1
+            end
 
-		MainGUIUpdateLocos( player_id )
-		MainGUIUpdateProviders( player_id )
-	end
+            if not cache[selected_index] then
+                cache[selected_index] = guiprovidertable(script_data.names[script_data.surfacenames[selected_index]])
+            end
 
-	local Visible = script_data.Visible
-	Visible[player_id] = not Visible[player_id]
+            local data = cache[selected_index]
+
+            playermeta.providercount.caption = data.amount
+            playermeta.providerinput.caption = {"Electronic." .. data.energyin[1], data.energyin[2]}
+            playermeta.providerstorage.caption = {"Electronic." .. data.storageenergy[1], data.storageenergy[2]}
+            playermeta.providerintake.caption = {"Electronic." .. data.intakeenergy[1], data.intakeenergy[2]}
+            playermeta.progressbar.value = data.value
+        end
+    end
 end
 
-local AddSurface = function( addtype, index_number, name, providers )
-	if addtype == "new" and ( name:find( "^Factory floor" ) or BlacklistSurfaces[name] or script_data.SurfaceIndexs[index_number] ) then
-		return false
-	end
+local function playerstart(player_index)
+    if not script_data.players[tostring(player_index)] then
+        local player = player_lib.new(game.players[player_index], script_data.surfacenames)
 
-	local Surfaces = script_data.Surfaces
-	
-	if Surfaces.Number < 29999 then
-		Surfaces.Number = Surfaces.Number + 1
-
-		local index = Format( "%05d", Surfaces.Number )
-
-		Surfaces.Names[index] = name
-		Surfaces.Indexs[index] = index_number
-		Surfaces.Providers[index] = providers or {}
-
-		script_data.SurfaceIndexs[index_number] = index
-
-		return true
-	else
-		return false
-	end
+        script_data.players[player.index] = player
+    end
 end
 
-local Events =
-{
-	["ElectronicCheckboxAGUI01"] = function( event )
-		local player_id = event.player_index
-		local state = event.element.state
-		
-		script_data.UpdateLoco[player_id] = state
-		script_data.GUIS[player_id].A["03"]["04"].enabled = not state
-	end,
-	["ElectronicCheckboxAGUI02"] = function( event )
-		local player_id = event.player_index
-		local state = event.element.state
-		
-		script_data.UpdateProvider[player_id] = state
-		script_data.GUIS[player_id].A["03"]["12"].enabled = not state
-	end,
-	["ElectronicListBoxAGUI01"] = function( event )
-		MainGUIUpdateProviders( event.player_index )
-	end
+local function playerload()
+    for _, player in pairs(game.players) do
+        playerstart(player.index)
+    end
+end
+
+local function checksurfaces()
+    for _, surface in pairs(game.surfaces) do
+        local name = surface.name
+        local index = tostring(surface.index)
+
+        if not (name:find("^Factory floor") or blacklistsurfaces[name] or script_data.surfaces[index]) then
+            script_data.surfaces[index] = {providers = {}, name = name, index = index}
+            script_data.names[name] = index
+            table.insert(script_data.surfacenames, name)
+        end
+    end
+end
+
+local function on_built_entity(event)
+    local entity = event.created_entity or event.entity or event.destination
+
+    if not (entity and entity.valid) then return end
+
+    local surface = entity.surface
+    local surfacename = surface.name
+
+    if (surfacename:find("^Factory floor") or blacklistsurfaces[surfacename]) then return end
+    if type(entity.unit_number) ~= "number" then return end
+
+    local name = entity.name
+    local index = tostring(entity.unit_number)
+
+    if loco_register[name] then
+        script_data.energy["1"][index] = entity
+        script_data.where[index] = "1"
+        script_data.energyall[index] = name
+        script_data.locomotives[index] = entity
+    elseif provider_register[name] then
+        script_data.surfaces[tostring(surface.index)].providers[index] = {entity = entity, energy_prototype = entity.prototype.electric_energy_source_prototype}
+        script_data.providers = script_data.providers + 1
+    end
+end
+
+local function on_surface_created(event)
+    local index = event.surface_index
+    local index_number = tostring(index)
+    local surface = game.surfaces[index]
+    local name = game.surfaces[index].name
+
+    if not (name:find("^Factory floor") or blacklistsurfaces[name] or script_data.surfaces[index_number]) then
+        script_data.surfaces[index_number] = {providers = {}, name = name, index = index_number}
+        script_data.names[name] = index_number
+        table.insert(script_data.surfacenames, name)
+
+        updatelist()
+    end
+end
+
+return {
+    on_init = function()
+        global.electronic = global.electronic or script_data
+
+        playerload()
+        checksurfaces()
+    end,
+    on_load = function()
+        script_data = global.electronic or script_data
+
+        for _, player in pairs(script_data.players) do
+            setmetatable(player, player_lib.metatable)
+        end
+    end,
+    on_configuration_changed = function(event)
+        local changes = event.mod_changes and event.mod_changes["Electronic_Locomotives"] or {}
+
+        global.electronic = global.electronic or script_data
+
+        playerload()
+        checksurfaces()
+
+        if next(changes) then
+            local oldchanges = changes.old_version
+
+            if oldchanges and changes.new_version then
+                if oldchanges == "0.3.14" then
+                    local old_script_data = global.script_data
+                    local GUIS = old_script_data.GUIS
+                    local energy = script_data.energy
+                    local where = script_data.where
+                    local energyall = script_data.energyall
+                    local locomotives = script_data.locomotives
+                    local players = script_data.players
+
+                    script_data.fuel = old_script_data.Fuel
+                    script_data.energytick = old_script_data.EnergyTick
+
+                    for index, locotable in pairs(old_script_data.Energy) do
+                        for _, entity in pairs(locotable) do
+                            if entity.valid then
+                                local index_number = tostring(entity.unit_number)
+
+                                energy[index][index_number] = entity
+                                where[index_number] = index
+                            end
+                        end
+                    end
+
+                    for _, entity in pairs(old_script_data.EnergyAll) do
+                        if entity.valid then
+                            energyall[tostring(entity.unit_number)] = entity.name
+                        end
+                    end
+
+                    for _, entity in pairs(old_script_data.Locomotives) do
+                        if entity.valid then
+                            locomotives[tostring(entity.unit_number)] = entity
+                        end
+                    end
+
+                    for _, surface in pairs(game.surfaces) do
+                        local name = surface.name
+                        local index = tostring(surface.index)
+
+                        if not (name:find("^Factory floor") or blacklistsurfaces[name]) then
+                            local providertable = surface.find_entities_filtered{name = {"Electronic-Energy-Provider", "Electronic-Energy-Provider-2"}}
+                            local surfaceproviders = script_data.surfaces[index].providers
+
+                            for _, entity in pairs(providertable) do
+                                surfaceproviders[tostring(entity.unit_number)] = {entity = entity, energy_prototype = entity.prototype.electric_energy_source_prototype}
+                                script_data.providers = script_data.providers + 1
+                            end
+                        end
+                    end
+
+                    for _, player in pairs(game.players) do
+                        local index = player.index
+                        local playermeta = players[tostring(index)]
+
+                        mod_gui.get_button_flow(player).ElectronicButton.destroy()
+                        
+                        playermeta.location = old_script_data.Position[index]
+                        playermeta.update_locos = old_script_data.UpdateLoco[index]
+                        playermeta.update_provider = old_script_data.UpdateProvider[index]
+
+                        if next(GUIS[index]) then
+                            GUIS[index].A["01"].destroy()
+                        end
+                    end
+
+                    global.script_data = nil
+                end
+            end
+        end
+    end,
+    events = {
+        [definesevents.on_tick] = function()
+            if next(script_data.locomotives) and script_data.providers > 0 then
+                script_data.energytick = script_data.energytick + 1
+
+                local energy = script_data.energy
+                local energyall = script_data.energyall
+                local where = script_data.where
+                local first = energy["1"]
+
+                if next(first) then
+                    local fuel = script_data.fuel
+
+                    for index, entity in pairs(first) do
+                        if entity.valid then
+                            local burner = entity.burner
+                            local missingfuel = fuelvalue - burner.remaining_burning_fuel
+                            local fuelamount = checkproviders(tostring(entity.surface.index), missingfuel)
+
+                            if fuelamount < missingfuel then
+                                burner.currently_burning = fuel
+                                burner.remaining_burning_fuel = fuelvalue - fuelamount
+
+                                if entity.speed == 0 and entity.train.state == definesstate.manual_control then
+                                    where[index] = nil
+                                    energyall[index] = nil
+                                else
+                                    local register = loco_register[entity.name]
+                                    energy[register][index] = entity
+                                    where[index] = register
+                                end
+                            else
+                                energy["2"][index] = entity
+                                where[index] = "2"
+                            end
+                        else
+                            remove(index)
+                        end
+                    end
+                end
+
+                for index, loco_table in pairs(energy) do
+                    if index ~= "more" and index ~= "1" then
+                        local index_number = tostring(tonumber(index) - 1)
+
+                        for index_number2 in pairs(loco_table) do
+                            where[index_number2] = index_number
+                        end
+
+                        energy[index_number] = loco_table
+                    end
+                end
+
+                energy["10"] = {}
+
+                if script_data.energytick == 10 then
+                    script_data.energytick = 0
+
+                    local more = energy["more"]
+
+                    for index, entity in pairs(more) do
+                        if entity.valid then
+                            local burner = entity.burner
+                            local fueltick = math.floor(burner.remaining_burning_fuel / burner.heat_capacity)
+
+                            if fueltick < 11 then
+                                if fueltick < 1 then fueltick = 1 end
+
+                                local index_number = tostring(fueltick)
+
+                                more[index] = nil
+                                energy[index_number][index] = entity
+                                where[index] = index_number
+                            end
+                        else
+                            remove(index)
+                        end
+                    end
+                end
+            end
+        end,
+        [definesevents.on_built_entity] = on_built_entity,
+        [definesevents.on_entity_cloned] = on_built_entity,
+        [definesevents.on_gui_checked_state_changed] = function(event)
+            local element = event.element
+            local name = element.name
+
+            if name:sub(1, 16) == "ELECTRONIC_CHECK" then
+                local playermeta = script_data.players[tostring(event.player_index)]
+                local number = name:sub(17, 18)
+
+                if number == "01" then
+                    local state = element.state
+
+                    playermeta.update_locos = state
+                    playermeta.updatelocobutton.enabled = not state
+                elseif number == "02" then
+                    local state = element.state
+
+                    playermeta.update_provider = state
+                    playermeta.updateproviderbutton.enabled = not state
+                end
+            end
+        end,
+        [definesevents.on_gui_click] = function(event)
+            local name = event.element.name
+
+            if name:sub(1, 16) == "ELECTRONIC_CLICK" then
+                local playermeta = script_data.players[tostring(event.player_index)]
+                local number = name:sub(17, 18)
+
+                if number == "01" then
+                    if playermeta.frame then
+                        playermeta:clear()
+                    else
+                        playermeta:gui(guilocotable(), guiprovidertable(script_data.names[script_data.surfacenames[playermeta.selected_index]]))
+                    end
+                elseif number == "02" then
+                    playermeta:clear()
+                elseif number == "03" then
+                    local data = guilocotable()
+
+                    playermeta.lococount.caption = data.locomotives
+                    playermeta.activeloco.caption = data.energyall
+                    playermeta.energyloco.caption = {"Electronic." .. data.energy[1], data.energy[2]}
+                elseif number == "04" then
+                    local data = guiprovidertable(playermeta.selected_index)
+
+                    playermeta.providercount.caption = data.amount
+                    playermeta.providerinput.caption = {"Electronic." .. data.energyin[1], data.energyin[2]}
+                    playermeta.providerstorage.caption = {"Electronic." .. data.storageenergy[1], data.storageenergy[2]}
+                    playermeta.providerintake.caption = {"Electronic." .. data.intakeenergy[1], data.intakeenergy[2]}
+                    playermeta.progressbar.value = data.value
+                end
+            end
+        end,
+        [definesevents.on_gui_location_changed] = function(event)
+            local playermeta = script_data.players[tostring(event.player_index)]
+            local element = event.element
+
+            if playermeta.frame and element.index == playermeta.frame.index then
+                playermeta.location = element.location
+            end
+        end,
+        [definesevents.on_gui_selection_state_changed] = function(event)
+            local element = event.element
+            local name = element.name
+
+            if name:sub(1, 15) == "ELECTRONIC_DROP" then
+                local playermeta = script_data.players[tostring(event.player_index)]
+                local number = name:sub(16, 17)
+
+                if number == "01" then
+                    local selected_index = element.selected_index
+                    local data = guiprovidertable(script_data.names[script_data.surfacenames[selected_index]])
+
+                    playermeta.selected_index = selected_index
+                    playermeta.providercount.caption = data.amount
+                    playermeta.providerinput.caption = {"Electronic." .. data.energyin[1], data.energyin[2]}
+                    playermeta.providerstorage.caption = {"Electronic." .. data.storageenergy[1], data.storageenergy[2]}
+                    playermeta.providerintake.caption = {"Electronic." .. data.intakeenergy[1], data.intakeenergy[2]}
+                    playermeta.progressbar.value = data.value
+                end
+            end
+        end,
+        [definesevents.on_player_created] = function(event)
+            playerstart(event.player_index)
+        end,
+        [definesevents.on_player_removed] = function(event)
+            script_data.players[tostring(event.player_index)] = nil
+        end,
+        [definesevents.on_research_finished] = function(event)
+            local name = event.research.name
+
+            if name == "Electronic-Locomotives-3" then
+                script_data.fuel = "electronic-fuel-02"
+            elseif name == "Electronic-Locomotives-4" then
+                script_data.fuel = "electronic-fuel-03"
+            elseif name == "Electronic-Locomotives-5" then
+                script_data.fuel = "electronic-fuel-04"
+            elseif name == "Electronic-Locomotives-6" then
+                script_data.fuel = "electronic-fuel-05"
+            end
+        end,
+        [definesevents.on_robot_built_entity] = on_built_entity,
+        [definesevents.on_surface_created] = on_surface_created,
+        [definesevents.on_surface_deleted] = function(event)
+            local surface = script_data.surfaces[tostring(event.surface_index)]
+            local name = surface.name
+
+            script_data.surfaces[surface.index] = nil
+            script_data.names[name] = nil
+
+            for index, surfacename in pairs(script_data.surfacenames) do
+                if name == surfacename then
+                    table.remove(script_data.surfacenames, index)
+
+                    break
+                end
+            end
+
+            updatelist()
+        end,
+        [definesevents.on_surface_imported] = on_surface_created,
+        [definesevents.on_surface_renamed] = function(event)
+            local index = tostring(event.surface_index)
+            local old_name = event.old_name
+            local new_name = event.new_name
+
+            if (old_name:find("^Factory floor") or blacklistsurfaces[old_name] or new_name:find("^Factory floor") or blacklistsurfaces[new_name] ) then return end
+
+            script_data.surfaces[index].name = new_name
+            script_data.names[old_name] = nil
+            script_data.names[new_name] = index
+
+            for index_number, name in pairs(script_data.surfacenames) do
+                if name == old_name then
+                    script_data.surfacenames[index_number] = new_name
+
+                    break
+                end
+            end
+
+            updatelist()
+        end,
+        [definesevents.on_train_changed_state] = function(event)
+            local train = event.train
+            local state = train.state
+
+            if (state == definesstate.wait_signal or state == definesevents.wait_station) then return end
+
+            local locomotives = train.locomotives
+            local locomotive_table = {}
+
+            for _, locomotive in pairs(locomotives.back_movers) do
+                if loco_register[locomotive.name] then
+                    locomotive_table[tostring(locomotive.unit_number)] = locomotive
+                end
+            end
+
+            for _, locomotive in pairs(locomotives.front_movers) do
+                if loco_register[locomotive.name] then
+                    locomotive_table[tostring(locomotive.unit_number)] = locomotive
+                end
+            end
+
+            if next(locomotive_table) then
+                local energy = script_data.energy
+                local where = script_data.where
+                local energyall = script_data.energyall
+
+                if ((state == definesstate.arrive_signal or state == definesstate.arrive_station) or (train.speed == 0 and state ~= definesstate.on_the_path)) then
+                    for index in pairs(locomotive_table) do
+                        local where_data = where[index]
+
+                        if where_data then
+                            energy[where_data][index] = nil
+                            where[index] = nil
+                        end
+
+                        energyall[index] = nil
+                    end
+                else
+                    for index, entity in pairs(locomotive_table) do
+                        local burner = entity.burner
+                        local fueltick = math.floor(burner.remaining_burning_fuel/burner.heat_capacity)
+
+                        local index_number = "more"
+
+                        if fueltick < 1 then fueltick = 1 end
+                        if fueltick < 11 then index_number = tostring(fueltick) end
+
+                        energy[index_number][index] = entity
+                        where[index] = index_number
+                        energyall[index] = entity.name
+                    end
+                end
+            end
+        end,
+        [definesevents.script_raised_built] = on_built_entity,
+        [definesevents.script_raised_revive] = on_built_entity
+    },
+    on_nth_tick = {
+        [15] = function()
+            local locodata = guilocotable()
+            local cache = {}
+
+            for _, playermeta in pairs(script_data.players) do
+                if playermeta.frame then
+                    if playermeta.update_locos then
+                        playermeta.lococount.caption = locodata.locomotives
+                        playermeta.activeloco.caption = locodata.energyall
+                        playermeta.energyloco.caption = {"Electronic." .. locodata.energy[1], locodata.energy[2]}
+                    end
+
+                    if playermeta.update_provider then
+                        local selected_index = playermeta.selected_index
+
+                        if not cache[selected_index] then
+                            cache[selected_index] = guiprovidertable(script_data.names[script_data.surfacenames[selected_index]])
+                        end
+
+                        local data = cache[selected_index]
+
+                        playermeta.providercount.caption = data.amount
+                        playermeta.providerinput.caption = {"Electronic." .. data.energyin[1], data.energyin[2]}
+                        playermeta.providerstorage.caption = {"Electronic." .. data.storageenergy[1], data.storageenergy[2]}
+                        playermeta.providerintake.caption = {"Electronic." .. data.intakeenergy[1], data.intakeenergy[2]}
+                        playermeta.progressbar.value = data.value
+                    end
+                end
+            end
+        end
+    }
 }
-
-local Click =
-{
-	["ElectronicButton"] = function( event )
-		MainGUIToggle( event.player_index )
-	end,
-	["ElectronicSpriteButtonAGUI01"] = function( event )
-		local player_id = event.player_index
-
-		script_data.GUIS[player_id].A["01"].visible = false
-		script_data.Visible[player_id] = false
-	end,
-	["ElectronicSpriteButtonAGUI02"] = function( event )
-		MainGUIUpdateLocos( event.player_index )
-	end,
-	["ElectronicSpriteButtonAGUI03"] = function( event )
-		MainGUIUpdateProviders( event.player_index )
-	end
-}
-
-local PlayerStart = function( player_id )
-	local player = game.players[player_id]
-	local button_flow = mod_gui.get_button_flow( player )
-
-	if not button_flow.ElectronicButton then
-		local b = GUI.AddSpriteButton( button_flow, "ElectronicButton", "item/Electronic-Energy-Provider" )
-	end
-
-	script_data.Position[player_id] = script_data.Position[player_id] or { x = 5, y = 85 * player.display_scale }
-	script_data.GUIS[player_id] = script_data.GUIS[player_id] or {}
-	script_data.Visible[player_id] = script_data.Visible[player_id] or false
-	script_data.UpdateLoco[player_id] = script_data.UpdateLoco[player_id] or false
-	script_data.UpdateProvider[player_id] = script_data.UpdateProvider[player_id] or false
-end
-
-local PlayerLoad = function()
-	for _, player in pairs( game.players ) do
-		PlayerStart( player.index )
-	end
-end
-
-local CheckSurface = function()
-	for _, surface in pairs( game.surfaces ) do
-		if AddSurface( "new", "S" .. surface.index, surface.name ) then
-			MainGUIUpdateProviderList()
-		end
-	end
-end
-
-
---Events
-local on_tick = function()
-	if next( script_data.Locomotives ) and script_data.Providers > 0 then
-		script_data.EnergyTick = script_data.EnergyTick + 1
-
-		local Energy = script_data.Energy
-		local Where = script_data.Where
-
-		if next( Energy["1"] ) then
-			local Fuel = script_data.Fuel
-			local entry_table = script_data.Register.Locomotives
-			local SurfaceIndexs = script_data.SurfaceIndexs
-
-			for index, entity in pairs( Energy["1"] ) do
-				if entity.valid then
-					local burner = entity.burner
-
-					if CheckProviders( SurfaceIndexs["S" .. entity.surface.index], FuelValue - burner.remaining_burning_fuel ) then
-						burner.currently_burning = Fuel
-						burner.remaining_burning_fuel = FuelValue
-
-						if entity.speed == 0 and entity.train.state == dt.manual_control then
-							script_data.Where[index] = nil
-							script_data.EnergyAll[index] = nil
-						else
-							local where = entry_table[entity.name]
-
-							if not where then
-								remote.call("AddElectronicLocomotive", "new", entity.name)
-								where = entry_table[entity.name]
-							end
-							
-							Energy[where][index] = entity
-							Where[index] = where
-						end
-					else
-						Energy["2"][index] = entity
-						Where[index] = "2"
-					end
-				else
-					Remove( index )
-				end
-			end
-		end
-
-		for index, loco_table in pairs( Energy ) do
-			if index ~= "more" and index ~= "1" then
-				local index_number = "" .. tonumber( index ) - 1
-
-				for unit_number in pairs( loco_table ) do
-					Where[unit_number] = index_number
-				end
-
-				Energy[index_number] = loco_table
-			end
-		end
-
-		script_data.Energy["10"] = {}
-
-		if script_data.EnergyTick == 10 then
-			script_data.EnergyTick = 0
-
-			for index, entity in pairs( Energy["more"] ) do
-				if entity.valid then
-					local burner = entity.burner
-					local FuelTick = math.floor( burner.remaining_burning_fuel / burner.heat_capacity )
-
-					if FuelTick < 11 then
-						if FuelTick < 1 then FuelTick = 1 end
-
-						local index_number = "" .. FuelTick
-
-						script_data.Energy["more"][index] = nil
-
-						Energy[index_number][index] = entity
-						Where[index] = index_number
-					end
-				else
-					Remove( index )
-				end
-			end
-		end
-	end
-end
-
-local on_created_entity = function( event )
-	local entity = event.created_entity or event.entity or event.destination
-
-	if not ( entity and entity.valid ) then return end
-
-	local surface = entity.surface
-
-	if surface.name:find( "^Factory floor" ) then return end
-
-	if type( entity.unit_number ) ~= "number" then return end
-
-	local name = entity.name
-	local unit_number = "E" .. entity.unit_number
-
-	if script_data.Register.Providers[name] then
-		script_data.Surfaces.Providers[script_data.SurfaceIndexs["S" .. surface.index]][unit_number] = entity
-		script_data.Providers = script_data.Providers + 1
-	elseif script_data.Register.Locomotives[name] then
-		script_data.Energy["1"][unit_number] = entity
-		script_data.Where[unit_number] = "1"
-		script_data.EnergyAll[unit_number] = entity
-		script_data.Locomotives[unit_number] = entity
-	end
-end
-
-local on_gui_event = function( event )
-	local events = Events[event.element.name]
-		
-	if events then
-		events( event )
-	end
-end
-
-local on_gui_click = function( event )
-	local click = Click[event.element.name]
-		
-	if click then
-		click( event )
-	end
-end
-
-local on_gui_location_changed = function( event )
-	local element = event.element
-
-	if element.name == "ElectronicFrameAGUI01" then
-		script_data.Position[event.player_index] = element.location
-	end
-end
-
-local on_player_created = function( event )
-	PlayerStart( event.player_index )
-end
-
-local on_player_removed = function( event )
-	local player_id = event.player_index
-
-	script_data.Position[player_id] = nil
-	script_data.GUIS[player_id] = nil
-	script_data.Visible[player_id] = nil
-	script_data.UpdateLoco[player_id] = nil
-	script_data.UpdateProvider[player_id] = nil
-end
-
-local on_research_finished = function( event )
-	local name = event.research.name
-
-	if name == "Electronic-Locomotives-3" then
-		script_data.Fuel = "electronic-fuel-02"
-	elseif name == "Electronic-Locomotives-4" then
-		script_data.Fuel = "electronic-fuel-03"
-	elseif name == "Electronic-Locomotives-5" then
-		script_data.Fuel = "electronic-fuel-04"
-	elseif name == "Electronic-Locomotives-6" then
-		script_data.Fuel = "electronic-fuel-05"
-	end
-end
-
-local on_surface_created = function( event )
-	local index = event.surface_index
-
-	if AddSurface( "new", "S" .. index, game.surfaces[index].name ) then
-		MainGUIUpdateProviderList()
-	end
-end
-
-local on_surface_deleted = function( event )
-	local index_number = "S" .. event.surface_index
-	local index = script_data.SurfaceIndexs[index_number]
-
-	if type( index ) ~= "string" then return end
-	
-	local Surfaces = script_data.Surfaces
-
-	script_data.Providers = script_data.Providers - table_size( Surfaces.Providers[index] )
-	script_data.SurfaceIndexs[index_number] = nil
-
-	Surfaces.Names[index] = nil
-	Surfaces.Indexs[index] = nil
-	Surfaces.Providers[index] = nil
-
-	script_data.Surfaces =
-	{
-		Number = 0,
-		Names = {},
-		Indexs = {},
-		Providers = {}
-	}
-
-	local Names = Surfaces.Names
-
-	for entry, Name in pairs( Names ) do
-		AddSurface( "", Surfaces.Indexs[entry], Name, Surfaces.Providers[entry] )
-	end
-
-	MainGUIUpdateProviderList()
-end
-
-local on_surface_renamed = function( event )
-	local newname = event.new_name
-
-	if ( newname:find( "^Factory floor" ) or event.old_name:find( "^Factory floor" ) ) then return end
-
-	script_data.Surfaces.Names[script_data.SurfaceIndexs["S" .. event.surface_index]] = newname
-
-	MainGUIUpdateProviderList()
-end
-
-local on_train_changed_state = function( event )
-	local train = event.train
-	local state = train.state
-
-	if ( state == dt.wait_signal or state == dt.wait_station ) then return end
-
-	local locomotives = train.locomotives
-	local Locomotives = {}
-	local locomotive_table = script_data.Register.Locomotives
-
-	for _, locomotive in pairs( locomotives.back_movers ) do
-		if locomotive_table[locomotive.name] then
-			Locomotives["E" .. locomotive.unit_number] = locomotive
-		end
-	end
-
-	for _, locomotive in pairs( locomotives.front_movers ) do
-		if locomotive_table[locomotive.name] then
-			Locomotives["E" .. locomotive.unit_number] = locomotive
-		end
-	end
-
-	if next( Locomotives ) then
-		local Energy = script_data.Energy
-		local Where = script_data.Where
-		local EnergyAll = script_data.EnergyAll
-
-		if ( ( state == dt.arrive_signal or state == dt.arrive_station ) or ( train.speed == 0 and state ~= dt.on_the_path ) ) then
-			for index in pairs( Locomotives ) do
-				local where = Where[index]
-
-				if where then
-					script_data.Energy[where][index] = nil
-					script_data.Where[index] = nil
-				end
-
-				script_data.EnergyAll[index] = nil
-			end
-		else
-			for index, entity in pairs( Locomotives ) do
-				local burner = entity.burner
-				local FuelTick = math.floor( burner.remaining_burning_fuel / burner.heat_capacity )
-
-				local index_number = "more"
-
-				if FuelTick < 11 then FuelTick = 1 end
-				if FuelTick < 11 then index_number = "" .. FuelTick end
-
-				Energy[index_number][index] = entity
-				Where[index] = index_number
-				EnergyAll[index] = entity
-			end
-		end
-	end
-end	
-
-local lib = {}
-
-lib.events =
-{
-	[de.on_tick] = on_tick,
-	[de.on_built_entity] = on_created_entity,
-	[de.on_entity_cloned] = on_created_entity,
-	[de.on_gui_checked_state_changed] = on_gui_event,
-	[de.on_gui_click] = on_gui_click,
-	[de.on_gui_location_changed] = on_gui_location_changed,
-	[de.on_gui_selection_state_changed] = on_gui_event,
-	[de.on_player_created] = on_player_created,
-	[de.on_player_removed] = on_player_removed,
-	[de.on_research_finished] = on_research_finished,
-	[de.on_robot_built_entity] = on_created_entity,
-	[de.on_surface_created] = on_surface_created,
-	[de.on_surface_deleted] = on_surface_deleted,
-	[de.on_surface_imported] = on_surface_created,
-	[de.on_surface_renamed] = on_surface_renamed,
-	[de.on_train_changed_state] = on_train_changed_state,	
-	[de.script_raised_built] = on_created_entity,
-  	[de.script_raised_revive] = on_created_entity
-}
-
-lib.on_nth_tick =
-{
-	[15] = function()
-		local Visible = script_data.Visible
-		local UpdateLoco = script_data.UpdateLoco
-		local UpdateProvider = script_data.UpdateProvider
-
-		for _, player in pairs( game.players ) do
-			local player_id = player.index
-
-			if Visible[player_id] then
-				if UpdateLoco[player_id] then
-					MainGUIUpdateLocos( player_id )
-				end
-
-				if UpdateProvider[player_id] then
-					MainGUIUpdateProviders( player_id )
-				end
-			end
-		end
-	end
-}
-
-lib.add_remote_interface = function()
-	remote.add_interface
-	(
-		"AddElectronicLocomotive",
-		{
-			new = function( name )
-				local FuelTick = math.floor( FuelValue / ( game.entity_prototypes[name].max_energy_usage / 0.9375 ) )
-				local entry = "more"
-				
-				if FuelTick < 11 then entry = "" .. FuelTick end
-					
-				script_data.Register.Locomotives[name] = entry
-			end
-		}
-	)
-end
-
-lib.on_load = function()
-	script_data = global.script_data or script_data
-end
-
-lib.on_configuration_changed = function( event )
-	local changes = event.mod_changes or {}
-
-	if next( changes ) then
-		global.script_data = global.script_data or script_data
-		
-		global.script_data.Register.Locomotives = util.table.deepcopy( RegisterLoco )
-		
-		PlayerLoad()
-		CheckSurface()
-		local electronicchanges = changes["Electronic_Locomotives"] or {}
-
-		if next( electronicchanges ) then
-			local oldversion = electronicchanges.old_version
-
-			if oldversion and electronicchanges.new_version then
-				if oldversion <= "0.2.1" then
-					for _, player in pairs( game.players ) do
-						local button_flow = mod_gui.get_button_flow( player )
-						local left = player.gui.left
-
-						if button_flow.ElectricButton then button_flow.ElectricButton.destroy() end
-						if left.ElectricFrame then left.ElectricFrame.destroy() end
-					end
-
-					local Locomotives = global.List.Trains
-					local Provider = global.List.Accus
-					local Locomotive = script_data.Locomotives
-					local Energy = script_data.Energy
-					local Where = script_data.Where
-					local EnergyAll = script_data.EnergyAll
-					local SurfaceIndexs = script_data.SurfaceIndexs
-					local Surfaces = script_data.Surfaces
-
-					for index, entity in pairs( Locomotives ) do
-						if entity.valid and not entity.surface.name:find( "^Factory floor" ) then
-							Locomotive[index] = entity
-
-							local burner = entity.burner
-							local FuelTick = math.floor( burner.remaining_burning_fuel / burner.heat_capacity )
-
-							local index_number = "more"
-
-							if FuelTick < 11 then FuelTick = 1 end
-							if FuelTick < 11 then index_number = "" .. FuelTick end
-
-							Energy[index_number][index] = entity
-							Where[index] = index_number
-							EnergyAll[index] = entity
-						end
-					end
-
-					for index, entity in pairs( Provider ) do
-						if entity.valid and not entity.surface.name:find( "^Factory floor" ) then
-							local surface = entity.surface
-
-							Surfaces.Providers[SurfaceIndexs["S" .. surface.index]][index] = entity
-							script_data.Providers = script_data.Providers + 1
-						end
-					end
-
-					global.Register = nil
-					global.List = nil
-					global.Power = nil
-					global.GUIS = nil
-					global.Fuel = nil
-				end
-			end
-		end
-	end
-end
-
-lib.on_init = function()
-	global.script_data = global.script_data or script_data
-
-	script_data.Register.Locomotives = util.table.deepcopy( RegisterLoco )
-
-	PlayerLoad()
-	CheckSurface()
-end
-
-return lib

@@ -1,32 +1,25 @@
 {
-	"entity":
-	[
-		[ "Senpais-Power-Provider", "Electronic-Energy-Provider" ],
-		[ "Senpais-Electric-Train", "Electronic-Standard-Locomotive" ],
-		[ "Senpais-Electric-Train-Heavy", "Electronic-Cargo-Locomotive" ]
-
-	],
-	"item":
-	[
-		[ "Senpais-Power-Provider", "Electronic-Energy-Provider" ],
-		[ "Senpais-Electric-Train", "Electronic-Standard-Locomotive" ],
-		[ "Senpais-Electric-Train-Heavy", "Electronic-Cargo-Locomotive" ]
-
-	],
-	"recipe":
-	[
-		[ "Senpais-Power-Provider", "Electronic-Energy-Provider" ],
-		[ "Senpais-Electric-Train", "Electronic-Standard-Locomotive" ],
-		[ "Senpais-Electric-Train-Heavy", "Electronic-Cargo-Locomotive" ]
-
-	],
-	"technology":
-	[
-		[ "Senpais-Electric-Train", "Electronic-Locomotives" ],
-		[ "Senpais-Electric-Train-2", "Electronic-Locomotives-2" ],
-		[ "Senpais-Electric-Train-3", "Electronic-Locomotives-3" ],
-		[ "Senpais-Electric-Train-4", "Electronic-Locomotives-4" ],
-		[ "Senpais-Electric-Train-5", "Electronic-Locomotives-5" ],
-		[ "Senpais-Electric-Train-6", "Electronic-Locomotives-6" ]
-	]
+    "entity": [
+        ["Senpais-Power-Provider", "Electronic-Energy-Provider"],
+        ["Senpais-Electric-Train", "Electronic-Standard-Locomotive"],
+        ["Senpais-Electric-Train-Heavy", "Electronic-Cargo-Locomotive"]
+    ],
+    "item": [
+        ["Senpais-Power-Provider", "Electronic-Energy-Provider"],
+        ["Senpais-Electric-Train", "Electronic-Standard-Locomotive"],
+        ["Senpais-Electric-Train-Heavy", "Electronic-Cargo-Locomotive"]
+    ],
+    "recipe": [
+        ["Senpais-Power-Provider", "Electronic-Energy-Provider"],
+        ["Senpais-Electric-Train", "Electronic-Standard-Locomotive"],
+        ["Senpais-Electric-Train-Heavy", "Electronic-Cargo-Locomotive"]
+    ],
+    "technology": [
+        ["Senpais-Electric-Train", "Electronic-Locomotives"],
+        ["Senpais-Electric-Train-2", "Electronic-Locomotives-2"],
+        ["Senpais-Electric-Train-3", "Electronic-Locomotives-3"],
+        ["Senpais-Electric-Train-4", "Electronic-Locomotives-4"],
+        ["Senpais-Electric-Train-5", "Electronic-Locomotives-5"],
+        ["Senpais-Electric-Train-6", "Electronic-Locomotives-6"]
+    ]
 }

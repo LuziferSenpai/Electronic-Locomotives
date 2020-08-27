@@ -31,6 +31,7 @@ Senpais.Functions.Create.Electronic_Locomotive = function(name, max_health, weig
 		fuel_inventory_size = 1
 	}
 	locomotive_entity.color = util.color(color)
+	locomotive_entity.equipment_grid = grid
 
 	for _, layer in pairs(locomotive_entity.pictures.layers) do
 		if layer.apply_runtime_tint == true then
@@ -44,10 +45,6 @@ Senpais.Functions.Create.Electronic_Locomotive = function(name, max_health, weig
 
 			break
 		end
-	end
-
-	if type(grid) == "string" then
-		locomotive_entity.equipment_grid = grid
 	end
 
 	local locomotive_item = table_deepcopy(data.raw["item-with-entity-data"]["locomotive"])
@@ -68,7 +65,7 @@ Senpais.Functions.Create.Electronic_Locomotive = function(name, max_health, weig
 
 	data:extend{locomotive_entity, locomotive_item, locomotive_recipe}
 
-	table.insert(data.raw["technology"][technology].effects, { type = "unlock-recipe", recipe = name })
+	table.insert(data.raw["technology"][technology].effects, {type = "unlock-recipe", recipe = name})
 end
 
 Senpais.Functions.Create.Grid = function(name, width, height, category)
