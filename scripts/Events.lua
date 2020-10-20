@@ -227,25 +227,6 @@ local function playerstart(player_index)
     end
 end
 
-local function playerload()
-    for _, player in pairs(game.players) do
-        playerstart(player.index)
-    end
-end
-
-local function checksurfaces()
-    for _, surface in pairs(game.surfaces) do
-        local name = surface.name
-        local index = tostring(surface.index)
-
-        if not (name:find("^Factory floor") or blacklistsurfaces[name] or script_data.surfaces[index]) then
-            script_data.surfaces[index] = {providers = {}, name = name, index = index}
-            script_data.names[name] = index
-            table.insert(script_data.surfacenames, name)
-        end
-    end
-end
-
 local function on_built_entity(event)
     local entity = event.created_entity or event.entity or event.destination
 
@@ -271,6 +252,61 @@ local function on_built_entity(event)
     end
 end
 
+local function playerload()
+    for _, player in pairs(game.players) do
+        playerstart(player.index)
+    end
+end
+
+local function checkresearch()
+    local techs = game.forces["player"].technologies
+
+    if techs["Electronic-Locomotives-6"].researched then
+        script_data.fuel = "electronic-fuel-05"
+    elseif techs["Electronic-Locomotives-5"].researched then
+        script_data.fuel = "electronic-fuel-04"
+    elseif techs["Electronic-Locomotives-4"].researched then
+        script_data.fuel = "electronic-fuel-03"
+    elseif techs["Electronic-Locomotives-3"].researched then
+        script_data.fuel = "electronic-fuel-02"
+    end
+end
+
+local function checksurfaces()
+    for _, surface in pairs(game.surfaces) do
+        local name = surface.name
+        local index = tostring(surface.index)
+
+        if not (name:find("^Factory floor") or blacklistsurfaces[name]) then
+            if script_data.surfaces[index] then
+                script_data.surfaces[index] = {providers = {}, name = name, index = index}
+                script_data.names[name] = index
+                table.insert(script_data.surfacenames, name)
+            end
+
+            local t = {}
+
+            for loconame, _ in pairs(loco_register) do
+                table.insert(t, loconame)
+            end
+
+            for providername, _ in pairs(provider_register) do
+                table.insert(t, providername)
+            end
+
+            local entities = surface.find_entities_filtered{name = t}
+
+            for _, entity in pairs(entities) do
+                if entity.type == "locomotive" and not script_data.locomotives[tostring(entity.unit_number)] then
+                    on_built_entity({entity = entity})
+                elseif entity.type == "electric-energy-interface" and not script_data.surfaces[index].providers[tostring(entity.unit_number)] then
+                    on_built_entity({entity = entity})
+                end
+            end
+        end
+    end
+end
+
 local function on_surface_created(event)
     local index = event.surface_index
     local index_number = tostring(index)
@@ -291,6 +327,7 @@ return {
         global.electronic = global.electronic or script_data
 
         playerload()
+        checkresearch()
         checksurfaces()
     end,
     on_load = function()
@@ -306,6 +343,7 @@ return {
         global.electronic = global.electronic or script_data
 
         playerload()
+        checkresearch()
         checksurfaces()
 
         if next(changes) then
@@ -508,7 +546,7 @@ return {
                     playermeta.activeloco.caption = data.energyall
                     playermeta.energyloco.caption = {"Electronic." .. data.energy[1], data.energy[2]}
                 elseif number == "04" then
-                    local data = guiprovidertable(playermeta.selected_index)
+                    local data = guiprovidertable(script_data.names[script_data.surfacenames[playermeta.selected_index]])
 
                     playermeta.providercount.caption = data.amount
                     playermeta.providerinput.caption = {"Electronic." .. data.energyin[1], data.energyin[2]}

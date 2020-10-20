@@ -224,8 +224,8 @@ braking_force_11.unit.count = 1400
 
 data:extend{{type = "fuel-category", name = "electronic"}, provider01_entity, provider01_item, provider01_recipe, provider02_entity, provider02_item, provider02_recipe, make_fuel("01", nil, nil), make_fuel("02", 1.2, 1.05), make_fuel("03", 1.8, 1.15), make_fuel("04", 2.5, 1.15), make_fuel("05", 3.5, 1.75), technology01, technology02, technology03, technology04, technology05, technology06, technology07, braking_force_8, braking_force_9, braking_force_10, braking_force_11}
 
-Senpais.Functions.Create.Electronic_Locomotive( "Electronic-Standard-Locomotive", 1000, 2000, 1.2, "600kW", "#53bb90", nil, "train-transport", "a[train-system]-faa[Electronic-Standard-Locomotive]", 5, {{"locomotive", 1}, {"battery", 10}, {"electric-engine-unit", 20}}, temp02)
-Senpais.Functions.Create.Electronic_Locomotive( "Electronic-Cargo-Locomotive", 2000, 5000, 1.4, "3MW", "#a61a1a", nil, "train-transport", "a[train-system]-fab[Electronic-Cargo-Locomotive]", 5, {{"Electronic-Standard-Locomotive", 1}, {"battery", 20}, {"electric-engine-unit", 20}}, temp02 .. "-2")
+Senpais.Functions.Create.Electronic_Locomotive("Electronic-Standard-Locomotive", 1000, 2000, 1.2, "600kW", "#53bb90", nil, "train-transport", "a[train-system]-faa[Electronic-Standard-Locomotive]", 5, {{"locomotive", 1}, {"battery", 10}, {"electric-engine-unit", 20}}, temp02)
+Senpais.Functions.Create.Electronic_Locomotive("Electronic-Cargo-Locomotive", 2000, 5000, 1.4, "3MW", "#a61a1a", nil, "train-transport", "a[train-system]-fab[Electronic-Cargo-Locomotive]", 5, {{"Electronic-Standard-Locomotive", 1}, {"battery", 20}, {"electric-engine-unit", 20}}, temp02 .. "-2")
 
 local s = data.raw["gui-style"].default
 
