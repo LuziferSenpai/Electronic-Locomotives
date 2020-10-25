@@ -278,7 +278,7 @@ local function checksurfaces()
         local index = tostring(surface.index)
 
         if not (name:find("^Factory floor") or blacklistsurfaces[name]) then
-            if script_data.surfaces[index] then
+            if not script_data.surfaces[index] then
                 script_data.surfaces[index] = {providers = {}, name = name, index = index}
                 script_data.names[name] = index
                 table.insert(script_data.surfacenames, name)
