@@ -6,7 +6,7 @@ if mods["angelsindustries"] then
     if angelsmods.industries.components then
         data.raw["recipe"]["Electronic-Energy-Provider"].ingredients = {
             {"accumulator", 5},
-            {"battery", 10},
+            {"battery-3", 10},
             {"block-construction-3", 10}
         }
         data.raw["recipe"]["Electronic-Energy-Provider-2"].ingredients = {
@@ -16,7 +16,7 @@ if mods["angelsindustries"] then
         }
         data.raw["recipe"]["Electronic-Standard-Locomotive"].ingredients = {
             {"locomotive", 1},
-            {"battery", 10},
+            {"battery-3", 10},
             {"block-construction-3", 10}
         }
         data.raw["recipe"]["Electronic-Cargo-Locomotive"].ingredients = {

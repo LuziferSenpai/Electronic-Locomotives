@@ -1,6 +1,6 @@
 {
     "name": "Electronic_Locomotives",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "title": "Electronic Locomotives",
     "author": "LuziferSenpai",
     "contact": "mods@luzifersenpai.de",
@@ -8,7 +8,7 @@
     "description": "Adds 2 new locomotives to the game, that uses electricity as fuel.",
     "dependencies": [
         "base >= 1.0.0",
-        "(?) angelsindustries >= 0.4.3"
+        "(?) angelsindustries >= 0.4.7"
     ],
     "factorio_version": "1.0"
 }
