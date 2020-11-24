@@ -1,4 +1,3 @@
-require "mod-gui"
 require "util"
 
 local player_lib = require "scripts/player"
