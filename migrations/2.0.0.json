@@ -1,0 +1,34 @@
+{
+    "entity":[
+        ["Electronic-Energy-Provider", "electronic-standard-provider"],
+        ["Electronic-Energy-Provider-2", "electronic-heavy-provider"],
+        ["Electronic-Standard-Locomotive", "electronic-standard-locomotive"],
+        ["Electronic-Cargo-Locomotive", "electronic-cargo-locomotive"]
+    ],
+    "item": [
+        ["Electronic-Energy-Provider", "electronic-standard-provider"],
+        ["Electronic-Energy-Provider-2", "electronic-heavy-provider"],
+        ["Electronic-Standard-Locomotive", "electronic-standard-locomotive"],
+        ["Electronic-Cargo-Locomotive", "electronic-cargo-locomotive"],
+        ["electronic-fuel-01", "electronic-fuel-1"],
+        ["electronic-fuel-02", "electronic-fuel-2"],
+        ["electronic-fuel-03", "electronic-fuel-3"],
+        ["electronic-fuel-04", "electronic-fuel-4"],
+        ["electronic-fuel-05", "electronic-fuel-5"]
+    ],
+    "recipe": [
+        ["Electronic-Energy-Provider", "electronic-standard-provider"],
+        ["Electronic-Energy-Provider-2", "electronic-heavy-provider"],
+        ["Electronic-Standard-Locomotive", "electronic-standard-locomotive"],
+        ["Electronic-Cargo-Locomotive", "electronic-cargo-locomotive"]
+    ],
+    "technology": [
+        ["Electronic-Locomotives", "electronic-locomotives"],
+        ["Electronic-Locomotives-2", "electronic-locomotives-2"],
+        ["Electronic-Locomotives-3", "electronic-locomotives-3"],
+        ["Electronic-Locomotives-4", "electronic-locomotives-4"],
+        ["Electronic-Locomotives-5", "electronic-locomotives-5"],
+        ["Electronic-Locomotives-6", "electronic-locomotives-6"],
+        ["Electronic-Locomotives-7", "electronic-locomotives-7"]
+    ]
+}

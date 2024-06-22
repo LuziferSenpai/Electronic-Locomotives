@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.0
+Date: 22.06.2024
+  Changes:
+    - Rewrote the update logic for performance improvements
+    - Removed the gui, its just annoying
+    - Remade the logic for adding electronic locomotives, its now so much simpler
+    - Code cleanup
+    - Reworked the braking force technologies to be more inline with vanilla in terms of unit cost & modifier
+  Features:
+    - Added force support
+    - Increased max_speed for cargo & fluid wagon if the max_speed is under 3
+    - Better braking_force & reversing_power_modifier for cargo locomotive 
+---------------------------------------------------------------------------------------------------
 Version: 1.0.5
 Date: 24.11.2020
   Changes:
