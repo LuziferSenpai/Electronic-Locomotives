@@ -312,6 +312,12 @@ eventsLib.on_init = function()
     initGlobals()
 end
 
+eventsLib.on_load = function()
+    if global.updateQuene then
+        setmetatable(global.updateQuene, queneMetatable)
+    end
+end
+
 eventsLib.on_configuration_changed = function(eventData)
     local electronicChanges = eventData.mod_changes and eventData.mod_changes["Electronic_Locomotives"] or {}
 
