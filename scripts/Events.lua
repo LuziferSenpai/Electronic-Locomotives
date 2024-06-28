@@ -226,7 +226,7 @@ eventsLib.events = {
 
         if ((trainState == trainStateDefine.arrive_signal or trainState == trainStateDefine.arrive_station) or (train.speed == 0 and trainState ~= trainStateDefine.on_the_path)) then
             for unitNumberString, _ in pairs(locomotiveUpdateList) do
-                removeFromQuene(unitNumberString)
+                if global.locomotives[unitNumberString] then removeFromQuene(unitNumberString) end
             end
         else
             local gameTick = game.tick
