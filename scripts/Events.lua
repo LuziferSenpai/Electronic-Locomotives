@@ -165,8 +165,6 @@ eventsLib.events = {
         global.fuel[forceIndexString] = getFuel(force)
         global.providers[forceIndexString] = global.providers[forceIndexString] or {}
 
-        setmetatable(global.updateQuene[forceIndexString], queneMetatable)
-
         for _, surface in pairs(game.surfaces) do
             local surfaceIndexString = tostring(surface.index)
 
