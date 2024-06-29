@@ -14,6 +14,7 @@ cargoLocomotiveEntity.minable.result = name
 cargoLocomotiveEntity.max_health = 2000
 cargoLocomotiveEntity.weight = 5000
 cargoLocomotiveEntity.max_speed = 3
+cargoLocomotiveEntity.max_power = "3MW"
 cargoLocomotiveEntity.reversing_power_modifier = 1.2
 cargoLocomotiveEntity.braking_force = 20
 cargoLocomotiveEntity.color = util.color(color)

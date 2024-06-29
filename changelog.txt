@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.3
+Date: 29.06.2024
+  Bugfixes:
+    - Fixed that the Electronic cargo locomotive had no max_power adjusted, its now at 3MW again
+---------------------------------------------------------------------------------------------------
 Version: 2.0.2
 Date: 28.06.2024
   Bugfixes:
